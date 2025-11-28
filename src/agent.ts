@@ -1,5 +1,7 @@
 import { GoogleGenAI, Chat } from "@google/genai";
 import { tools, getToolByName, getToolDeclarations } from "./tools/index.js";
+import { Context, createContext } from "./context.js";
+import { generateSystemPrompt } from "./prompt.js";
 
 export interface AgentConfig {
   apiKey: string;
@@ -11,27 +13,56 @@ export class Agent {
   private ai: GoogleGenAI;
   private chat: Chat | null = null;
   private model: string;
-  private systemInstruction: string;
+  private systemInstruction: string | undefined;
+  private context: Context | null = null;
 
   constructor(config: AgentConfig) {
     this.ai = new GoogleGenAI({ apiKey: config.apiKey });
     this.model = config.model || "gemini-3-pro-preview";
-    this.systemInstruction = config.systemInstruction || `You are a code editing assistant. You help users read, understand, and modify code files.
+    this.systemInstruction = config.systemInstruction;
+  }
 
-Available tools:
-- read_file: Read file contents before making changes
-- list_files: Explore directory structure
-- edit_file: Make targeted edits to files
-- web_search: Search the web for documentation and examples
+  get currentModel(): string {
+    return this.model;
+  }
 
-Always read a file before editing it. Make minimal, focused changes.`;
+  async getMessageCount(): Promise<number> {
+    if (!this.chat) return 0;
+    // Attempt to access history if available, otherwise return 0 or track manually
+    // The SDK's Chat object might handle history internally. 
+    // We'll inspect it via any for now or just return 0 if not accessible.
+    try {
+        // @ts-ignore
+        const history = await this.chat.getHistory();
+        return history.length;
+    } catch (e) {
+        return 0; 
+    }
+  }
+
+  async getContextSize(): Promise<number> {
+    if (!this.chat) return 0;
+    try {
+       // @ts-ignore
+       const history = await this.chat.getHistory();
+       const response = await this.ai.models.countTokens({
+           model: this.model,
+           contents: history,
+       });
+       return response.totalTokens || 0;
+    } catch (e) {
+        return 0;
+    }
   }
 
   async start(): Promise<void> {
+    this.context = await createContext();
+    const generatedSystemPrompt = generateSystemPrompt(tools, this.context);
+    
     this.chat = this.ai.chats.create({
       model: this.model,
       config: {
-        systemInstruction: this.systemInstruction,
+        systemInstruction: this.systemInstruction || generatedSystemPrompt,
         tools: [{ functionDeclarations: getToolDeclarations() }],
       },
     });

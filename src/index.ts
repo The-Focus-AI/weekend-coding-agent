@@ -14,8 +14,11 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-function prompt(): void {
-  rl.question("\nYou: ", async (input) => {
+async function prompt(): Promise<void> {
+  const msgCount = await agent.getMessageCount();
+  const contextSize = await agent.getContextSize();
+  
+  rl.question(`\n[${msgCount} msgs, ${contextSize} tokens] You: `, async (input) => {
     const trimmed = input.trim();
 
     if (!trimmed || trimmed === "exit" || trimmed === "quit") {
@@ -40,5 +43,6 @@ function prompt(): void {
 }
 
 console.log("Code Editing Agent (powered by Gemini)");
+console.log(`Model: ${agent.currentModel}`);
 console.log("Type 'exit' to quit.\n");
 prompt();

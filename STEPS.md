@@ -547,3 +547,36 @@ All tasks from BUILD_PLAN.md are complete. Here's the summary:
 ```
 
 OK, update it to the latest model.
+
+---
+
+# Lift off: Our agent is improving our agent!
+
+Start up our agent
+
+> Ok, lets update so we have a context object that has the date and say a list of files, and that theres a prompt.ts file that will generate the system prompt -- it gets a list of tools and the context and returns it. Also on start up lets print the current model -- it should defualt to the latest gemini 3 -- that it's using and also the readline prompt should have the number of messages in the chat object and perhaps the size of the context. 
+
+This worked, but it kept on trying to use `TAVILY_API_KEY`.  Let me set that and then rerun it.
+
+that seemed to work!  Make it learn about our research:
+
+> update the context so that it includes the frontmatter of each of the files in reports/ with the name of the file, so that the model knows what research is available
+
+```markdown
+The following changes have been made to update the context with research reports:
+
+1.  **Modified `src/context.ts`**:
+    *   Updated the `Context` interface to include a `reports` array containing `filename` and `frontmatter`.
+    *   Updated `createContext` function to read `.md` files from the `reports/` directory.
+    *   Implemented logic to extract YAML frontmatter (content between `---` delimiters) from the report files.
+
+2.  **Modified `src/prompt.ts`**:
+    *   Updated `generateSystemPrompt` to include the list of available research reports (filename and frontmatter) in the system prompt generated for the AI model.
+
+These changes ensure that the model is aware of the available research in the `reports/` folder when it starts.
+
+**Files Edited:**
+
+*   `src/context.ts`
+*   `src/prompt.ts`
+```
