@@ -232,3 +232,59 @@ Research Complete
   The report includes integration patterns with your Gemini agent, anti-patterns to avoid, and a complete alternative section for
   Serper when you need raw Google data.
 ```
+
+---
+
+# Make the plan
+
+OK we know enough stuff right now, lets start building!
+
+> look through all our reposts/ and make a plan to build this: https://ampcode.com/how-to-build-an-agent and write it in BUILD_PLAN.md
+
+Tweak it a little bit.
+
+```markdown
+Done! I've created BUILD_PLAN.md with a comprehensive plan to build a code-editing agent based on the ampcode article, adapted for
+  our researched stack.
+
+  Key points from the plan:
+
+  1. Architecture: Follows ampcode's simple pattern - an LLM, a loop, and tools. The core is ~400 lines just like the Go version.
+  2. Stack: Uses our researched technologies:
+    - tsx + vitest for TypeScript development
+    - @google/genai for Gemini 3 Pro
+    - @tavily/core for web search (optional)
+  3. Three Essential Tools (from ampcode):
+    - read_file - Read file contents
+    - list_files - Explore directories
+    - edit_file - Make string replacements or create files
+  4. Key Adaptation: The ampcode article uses Claude with manual conversation management. Our version uses Gemini's ai.chats which
+  automatically handles conversation history and thought signatures.
+  5. Streaming: Full streaming support for real-time output, improving on the article's approach.
+
+  The plan includes complete code examples, tests, and step-by-step instructions to build the agent from scratch.
+  ```
+
+> update @BUILD_PLAN.md to build it off of what is in the current directory, looking at whats there and modifying not replacing.  also make sure git and gitignore are setup correctly
+
+```markdown
+Done! I updated BUILD_PLAN.md to:
+
+  1. Removed the agent/ prefix from the project structure diagram
+  2. Removed the mkdir agent && cd agent command from Step 1
+  3. Changed the instruction to "Initialize the project with our researched TypeScript stack in the current directory"
+  4. Added "Current Directory State" section - Documents what already exists (mise.toml, .git/, reports/, etc.) and
+  what needs to be created
+  5. Updated Project Structure - Now shows which files are existing vs to be created
+  6. Reorganized Step 1 into sub-steps:
+    - Step 1a: Create .gitignore (with full Node.js gitignore content)
+    - Step 1b: Update mise.toml (shows current content and how to modify it, keeping existing claude-code tool)
+    - Step 1c: Create package.json
+    - Step 1d: Install dependencies
+    - Step 1e: Create tsconfig.json
+    - Step 1f: Create vitest.config.ts
+  7. Clarified all file actions - Changed "src/tools/types.ts:" to "Create src/tools/types.ts:" throughout
+  8. Added Summary table at the end showing all files with their action (Create/Update) and description
+  9. Listed preserved files - Shows which existing files won't be touched
+```
+
