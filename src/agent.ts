@@ -15,7 +15,7 @@ export class Agent {
 
   constructor(config: AgentConfig) {
     this.ai = new GoogleGenAI({ apiKey: config.apiKey });
-    this.model = config.model || "gemini-2.0-flash";
+    this.model = config.model || "gemini-3-pro-preview";
     this.systemInstruction = config.systemInstruction || `You are a code editing assistant. You help users read, understand, and modify code files.
 
 Available tools:
@@ -65,60 +65,80 @@ Always read a file before editing it. Make minimal, focused changes.`;
       }
     }
 
-    // Execute any function calls
-    for (const call of functionCalls) {
-      yield* this.executeFunctionCall(call);
+    // Execute all function calls and collect results
+    if (functionCalls.length > 0) {
+      yield* this.executeFunctionCalls(functionCalls);
     }
   }
 
-  private async *executeFunctionCall(
-    call: { name: string; args: Record<string, unknown> }
+  private async *executeFunctionCalls(
+    calls: Array<{ name: string; args: Record<string, unknown> }>
   ): AsyncGenerator<string> {
-    yield `\n[Executing ${call.name}...]\n`;
+    // Execute all function calls and collect their results
+    const functionResponses: Array<{
+      functionResponse: { name: string; response: { result: string } };
+    }> = [];
 
-    const tool = getToolByName(call.name);
-    if (!tool) {
-      yield `[Error: Unknown tool ${call.name}]\n`;
-      return;
-    }
+    for (const call of calls) {
+      yield `\n[Executing ${call.name}...]\n`;
 
-    try {
-      const result = await tool.execute(call.args);
-      yield `[Result: ${result.slice(0, 100)}${result.length > 100 ? "..." : ""}]\n`;
+      const tool = getToolByName(call.name);
+      if (!tool) {
+        yield `[Error: Unknown tool ${call.name}]\n`;
+        functionResponses.push({
+          functionResponse: {
+            name: call.name,
+            response: { result: `Error: Unknown tool ${call.name}` },
+          },
+        });
+        continue;
+      }
 
-      // Send result back to model
-      const followUp = await this.chat!.sendMessageStream({
-        message: [{
+      try {
+        const result = await tool.execute(call.args);
+        yield `[Result: ${result.slice(0, 100)}${result.length > 100 ? "..." : ""}]\n`;
+        functionResponses.push({
           functionResponse: {
             name: call.name,
             response: { result },
           },
-        }],
-      });
-
-      // Stream the follow-up response and collect any nested function calls
-      const nestedFunctionCalls: Array<{ name: string; args: Record<string, unknown> }> = [];
-
-      for await (const chunk of followUp) {
-        // Check for function calls first to avoid SDK warning about non-text parts
-        if (chunk.functionCalls && chunk.functionCalls.length > 0) {
-          nestedFunctionCalls.push(...chunk.functionCalls
-            .filter(fc => fc.name !== undefined)
-            .map(fc => ({
-              name: fc.name!,
-              args: fc.args as Record<string, unknown>,
-            })));
-        } else if (chunk.text) {
-          yield chunk.text;
-        }
+        });
+      } catch (error) {
+        yield `[Error: ${error}]\n`;
+        functionResponses.push({
+          functionResponse: {
+            name: call.name,
+            response: { result: `Error: ${error}` },
+          },
+        });
       }
+    }
 
-      // Handle nested function calls recursively
-      for (const nestedCall of nestedFunctionCalls) {
-        yield* this.executeFunctionCall(nestedCall);
+    // Send ALL function responses back to the model in a single message
+    const followUp = await this.chat!.sendMessageStream({
+      message: functionResponses,
+    });
+
+    // Stream the follow-up response and collect any nested function calls
+    const nestedFunctionCalls: Array<{ name: string; args: Record<string, unknown> }> = [];
+
+    for await (const chunk of followUp) {
+      // Check for function calls first to avoid SDK warning about non-text parts
+      if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+        nestedFunctionCalls.push(...chunk.functionCalls
+          .filter(fc => fc.name !== undefined)
+          .map(fc => ({
+            name: fc.name!,
+            args: fc.args as Record<string, unknown>,
+          })));
+      } else if (chunk.text) {
+        yield chunk.text;
       }
-    } catch (error) {
-      yield `[Error: ${error}]\n`;
+    }
+
+    // Handle nested function calls recursively
+    if (nestedFunctionCalls.length > 0) {
+      yield* this.executeFunctionCalls(nestedFunctionCalls);
     }
   }
 
