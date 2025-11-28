@@ -87,7 +87,7 @@ Clarifying questions
 
 It thinkgs for a more than 3 minutes and finally:
 
-```bash
+```markdown
 Research Complete
 
   I've written the report to reports/2025-11-28-typescript-project-setup.md.
@@ -129,3 +129,51 @@ Research Complete
   While Node 22+ supports TypeScript natively via type stripping, it has limitations: no enums without extra flags, no tsconfig
   features like path aliases, and it's still experimental for production. tsx "just works" with zero config.
 ```
+
+---
+
+# Teach it about using Gemini 3
+
+Clean up the context
+
+> /clear
+
+More research:
+
+> /research using the latest version of the gemini 3 models, specifically gemini3 and nano-banana 
+
+Clarifying questions
+
+> the main use will be build a software writing agent, but we will also want to use image and video generation.  it will be a clit, and it will be streaming and multi-turn 
+
+And just to remind it again
+
+> remember that we are looking for gemini 3
+
+And off it goes.  Finally:
+
+```markdown
+Research Complete
+
+  I've written a comprehensive report at reports/2025-11-28-gemini-3-agent-development.md. Here's the summary:
+
+  Recommendation: @google/genai SDK (v1.30.0)
+
+  Key findings:
+
+  1. Gemini 3 Pro (gemini-3-pro-preview-11-2025) - Released Nov 25, 2025. 1M token context, 64K output. $2/$12 per million tokens
+  (input/output). Best-in-class for agentic coding tasks.
+  2. Nano Banana Pro (gemini-3-pro-image-preview) - Released Nov 20, 2025. Generates up to 4K images, handles 14 reference images,
+  excellent text rendering. Built on Gemini 3 Pro reasoning.
+  3. Veo 3.1 (veo-3.1-generate-preview) - 8-second video clips with native audio. Async generation with polling pattern.
+  4. SDK Migration Required: @google/generative-ai is deprecated and loses all support August 31, 2025. Use @google/genai instead.
+
+  For your agent CLI:
+  - Use ai.chats.create() for multi-turn with automatic thought signature handling
+  - Use sendMessageStream() for streaming responses
+  - Define tools via functionDeclarations for agent capabilities
+  - Keep temperature at 1.0 (Gemini 3's reasoning is optimized for this)
+
+  The report includes 7 code patterns covering streaming, multi-turn chat, function calling, image generation, image editing, and
+  video generation.
+  ```
