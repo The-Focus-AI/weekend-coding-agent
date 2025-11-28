@@ -72,3 +72,60 @@ Done. I created the research agent prompt at .claude/commands/research.md.
   The report will be saved to reports/YYYY-MM-DD-descriptive-topic.md with sections for Summary, Philosophy, Setup, Core Usage
   Patterns, Anti-Patterns & Pitfalls, Caveats, and References.
 ```
+
+---
+
+# Teach it how to setup TypeScript projects
+
+Now that we have that, we can clear the session, or create a new thread, and start using the prompt.  `/clear`
+
+> /research the most modern and clean way to setup a typescript project in november 2025 when you are using mise for environment management, I want it to be as simple as possible
+
+Clarifying questions
+
+> we are going to build a cli coding agent and want testing 
+
+It thinkgs for a more than 3 minutes and finally:
+
+```bash
+Research Complete
+
+  I've written the report to reports/2025-11-28-typescript-project-setup.md.
+
+  Recommendation: tsx + Vitest
+
+  The simplest modern setup for a CLI coding agent:
+
+  | Tool   | Purpose             | Why                                                                         |
+  |--------|---------------------|-----------------------------------------------------------------------------|
+  | tsx    | Run TypeScript      | Zero-config, instant execution, 11.6k GitHub stars                          |
+  | Vitest | Testing             | Native TS support, Jest-compatible API, 15.4k stars, 18.5M weekly downloads |
+  | tsc    | Type checking       | Run separately in CI/pre-commit                                             |
+  | mise   | Tasks + environment | Already have it, replaces npm scripts                                       |
+
+  Quick Start
+
+  npm init -y
+  npm install -D typescript tsx vitest @types/node
+
+  Update mise.toml:
+  [env]
+  _.path = ["./node_modules/.bin"]
+
+  [tools]
+  node = "22"
+
+  [tasks.dev]
+  run = "tsx watch src/index.ts"
+
+  [tasks.test]
+  run = "vitest"
+
+  [tasks.typecheck]
+  run = "tsc --noEmit"
+
+  Why not Node.js native TypeScript?
+
+  While Node 22+ supports TypeScript natively via type stripping, it has limitations: no enums without extra flags, no tsconfig
+  features like path aliases, and it's still experimental for production. tsx "just works" with zero config.
+```

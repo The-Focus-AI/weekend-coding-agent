@@ -1,114 +1,126 @@
 
-> Write a prompt for a research agent that searches the internet based upon the current technologies and choices that have been made 
-in the project to find the best techniques or libraries of doing something, and finds the best choice base upon simplicity, 
-popularity, good support. It should output its findings in reports/yyyy-mm-dd-topic.md and it should have front matter saying when 
-it's appropriate or not to use.  It should explain how to use the library or software, the theory behind it and its basic usage 
-philosphy.  The first part of the report will give a short explaination of what you've found, then it should go into detail on how to
- use it (incuding setup and code examples), and finally it should have a caviats section at the bottom saying when its not right.  It
- should include a bibliography of sources it used that can be followed for more information, and the report should be annotated where
- it get information.  Ask me clarifing questions one at time before going writing the research prompt 
-  ⎿  ⧉ Selected 1 lines from STEPS.md in Cursor
+> /research is running… the most modern and clean way to setup a typescript project in november 2025 when you are using mise for 
+environment management, I want it to be as simple as possible 
 
-⏺ I'd be happy to help write a research agent prompt. Let me ask some clarifying questions one at a time.
+⏺ I'll help you find the best way to set up a modern, simple TypeScript project with mise. Let me first examine your current project
+  context.
 
-  Question 1: What is the primary technology stack or programming language for this project? (e.g., TypeScript/Node.js, Python, Go,
-  etc.) This will help the research agent understand the context for library recommendations.
+⏺ Search(pattern: "**/{package.json,tsconfig.json,.mise.toml,mise.toml,.tool-versions}")
+  ⎿  Found 1 file (ctrl+o to expand)
 
-> the prompt should examine the current project's technology choices 
+⏺ Bash(ls -la)
+  ⎿  total 32                                           
+     drwxr-xr-x@  8 wschenk  staff   256 Nov 28 11:48 .
+     drwx------@ 28 wschenk  staff   896 Nov 28 11:48 ..
+     … +6 lines (ctrl+o to expand)
 
-⏺ Got it - the agent should introspect the project first to understand the tech stack before researching. That makes it more
-  flexible.
+⏺ Read(mise.toml)
+  ⎿  Read 4 lines
 
-  Question 2: Should the research agent focus on a single "best" recommendation, or should it present 2-3 top options with a clear
-  recommendation of which one to use and why?
+⏺ Good, I can see you already have mise set up with Node.js. Now let me ask you a few discriminating questions to narrow down the
+  best recommendation:
 
-> it should ask clarifying questions until it gets to the best, so make those questions count 
+  Questions to Guide the Recommendation
 
-⏺ Understood - the agent should ask targeted, high-value questions to efficiently narrow down to the single best choice rather than
-  presenting multiple options.
+  1. What's the target runtime?
+    - Node.js only (CLI tools, backend services, scripts)
+    - Browser/bundled (frontend, library to be bundled)
+    - Both (isomorphic/full-stack)
+  2. What's the primary use case?
+    - Quick scripts/utilities (minimal config, just want to run .ts files)
+    - Library/package (will publish to npm, needs proper build output)
+    - Application (backend API, CLI tool with dependencies)
+  3. Testing and tooling preferences?
+    - Minimal (just TypeScript execution, I'll add testing later if needed)
+    - Batteries included (want testing, linting, formatting set up from the start)
 
-  Question 3: When the agent annotates sources in the report, what citation style do you prefer? For example:
-  - Inline links [source](url)
-  - Numbered footnotes [1] with a references section
-  - Superscript markers linking to bibliography
+> we are going to build a cli coding agent and want testing 
 
-> numbered footnotes 
+⏺ Got it! A CLI coding agent in TypeScript with testing. Let me research the current best practices for late 2025.
 
-⏺ Good choice - numbered footnotes [1] with a references section at the bottom.
+⏺ Web Search("typescript project setup 2025 Node.js native typescript support tsx tsup best practice")
+  ⎿  Did 1 search in 40s                                                                                                            
 
-  Question 4: For the front matter that describes when to use/not use the library - should this be in a specific format like YAML
-  front matter (common in markdown static sites), or just a plain text section at the top of the document?
+⏺ Web Search("Node.js 22 --experimental-strip-types native typescript 2025")
+  ⎿  Did 1 search in 24s                                                                                                            
 
-> YAML 
+⏺ Web Search("vitest vs node test runner 2025 typescript testing")
+  ⎿  Did 1 search in 27s                                                                                                            
 
-⏺ YAML front matter it is.
+⏺ Web Search("tsx npm downloads github stars 2025 typescript runner")
+  ⎿  Did 1 search in 18s                                                                                                            
 
-  Question 5: Should the code examples in the report be minimal snippets showing core usage, or more complete working examples that
-  could be copy-pasted into the project with minimal modification?
+⏺ Web Search("vitest node.js CLI application setup 2025 typescript")
+  ⎿  Did 1 search in 23s                                                                                                            
 
-> the target audience for this is an LLM, so it should be focused on what most effectively conveys the key information 
+⏺ Web Search("tsdown typescript bundler 2025 replacement tsup")
+  ⎿  Did 1 search in 20s                                                                                                            
 
-⏺ That's an important detail - optimizing for LLM consumption means focusing on clear patterns, explicit relationships, and
-  unambiguous explanations rather than human-friendly prose.
+⏺ Web Search("vitest npm downloads github stars november 2025")
+  ⎿  Did 1 search in 15s                                                                                                            
 
-  Question 6: Should the report include information about common pitfalls or anti-patterns the LLM should avoid when implementing
-  with this library? This could help prevent the LLM from generating problematic code.
+⏺ Fetch(https://nodejs.org/en/learn/typescript/run-natively)
+  ⎿  Received 244KB (200 OK)
 
-> correct 
+⏺ Fetch(https://nodejs.org/api/typescript.html)
+  ⎿  Received 29.7KB (200 OK)
 
-⏺ Got it - include pitfalls and anti-patterns to prevent bad implementations.
+⏺ Web Search("mise typescript node project setup .mise.toml tasks 2025")
+  ⎿  Did 1 search in 22s                                                                                                            
 
-  Question 7: When the research agent asks its clarifying questions to narrow down the best choice, should it limit itself to a
-  maximum number of questions, or keep asking until it has enough confidence to make a definitive recommendation?
+⏺ I have all the information I need. Let me write the research report now.
 
-> it should try to get there with 2-3 questions max 
+⏺ Write(reports/2025-11-28-typescript-project-setup.md)
+  ⎿  Wrote 420 lines to reports/2025-11-28-typescript-project-setup.md
+     ---
+     title: "TypeScript CLI Project Setup: tsx + Vitest"
+     date: 2025-11-28
+     topic: typescript-project-setup
+     recommendation: tsx + vitest
+     version_researched: tsx 4.20.6, vitest 4.0.14, Node.js 22+
+     use_when:
+       - Building CLI tools or backend services in TypeScript
+       - You want zero-config TypeScript execution
+       - You need fast, modern testing with Jest-compatible API
+     … +410 lines (ctrl+o to expand)
 
-⏺ 2-3 questions max - so the questions need to be highly discriminating to efficiently narrow the field.
+⏺ Research Complete
 
-  Question 8: Should the reports/ directory be at the project root, or should the agent be flexible about where to place it based on
-  project structure (e.g., if there's already a docs/ folder)?
+  I've written the report to reports/2025-11-28-typescript-project-setup.md.
 
-> project root 
+  Recommendation: tsx + Vitest
 
-⏺ reports/ at project root.
+  The simplest modern setup for a CLI coding agent:
 
-  Question 9: For the topic portion of the filename (yyyy-mm-dd-topic.md), should it be a short slug like state-management or more
-  descriptive like react-state-management-library-comparison?
+  | Tool   | Purpose             | Why                                                                         |
+  |--------|---------------------|-----------------------------------------------------------------------------|
+  | tsx    | Run TypeScript      | Zero-config, instant execution, 11.6k GitHub stars                          |
+  | Vitest | Testing             | Native TS support, Jest-compatible API, 15.4k stars, 18.5M weekly downloads |
+  | tsc    | Type checking       | Run separately in CI/pre-commit                                             |
+  | mise   | Tasks + environment | Already have it, replaces npm scripts                                       |
 
-> more descriptive -- just use your best judgement and write the prompt 
+  Quick Start
 
-⏺ I have enough to write the prompt. Let me read the current STEPS.md file to understand the context, then write the research agent
-  prompt.
+  npm init -y
+  npm install -D typescript tsx vitest @types/node
 
-⏺ Read(STEPS.md)
-  ⎿  Read 53 lines
+  Update mise.toml:
+  [env]
+  _.path = ["./node_modules/.bin"]
 
-⏺ Now I'll write the research agent prompt:
+  [tools]
+  node = "22"
 
-⏺ Write(.claude/commands/research.md)
-  ⎿  Wrote 146 lines to .claude/commands/research.md                                                                          
-     # Research Agent: Find the Best Library or Technique
-     You are a research agent that helps find the optimal library, tool, or technique for a specific need within this project.
-     ## Your Mission
-     Find the single best solution based on: **simplicity**, **popularity**, and **good support/maintenance**.
-     ## Process
-     … +136 lines (ctrl+o to expand)
+  [tasks.dev]
+  run = "tsx watch src/index.ts"
 
-⏺ Done. I created the research agent prompt at .claude/commands/research.md.
+  [tasks.test]
+  run = "vitest"
 
-  Key features:
+  [tasks.typecheck]
+  run = "tsc --noEmit"
 
-  1. Project introspection - Automatically examines package.json, pyproject.toml, etc. to understand the tech stack
-  2. 2-3 targeted questions - Asks discriminating questions that maximally reduce uncertainty
-  3. Definitive recommendation - Outputs ONE best choice, not a comparison
-  4. LLM-optimized format - Clear structure, explicit patterns, anti-patterns section
-  5. Numbered footnotes - Every claim annotated with [1] style references
-  6. YAML front matter - Includes use_when and avoid_when arrays for quick scanning
+  Why not Node.js native TypeScript?
 
-  Usage:
-  /research how to do form validation
-  /research state management for complex forms
-  /research authentication strategy
-
-  The report will be saved to reports/YYYY-MM-DD-descriptive-topic.md with sections for Summary, Philosophy, Setup, Core Usage
-  Patterns, Anti-Patterns & Pitfalls, Caveats, and References.
+  While Node 22+ supports TypeScript natively via type stripping, it has limitations: no enums without extra flags, no tsconfig
+  features like path aliases, and it's still experimental for production. tsx "just works" with zero config.
