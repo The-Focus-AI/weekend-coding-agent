@@ -26,6 +26,17 @@ export class Agent {
     return this.model;
   }
 
+  async getHistory(): Promise<any[]> {
+    if (!this.chat) return [];
+    try {
+        // @ts-ignore
+        return await this.chat.getHistory();
+    } catch (e) {
+        console.error("Failed to get history:", e);
+        return [];
+    }
+  }
+
   async getMessageCount(): Promise<number> {
     if (!this.chat) return 0;
     // Attempt to access history if available, otherwise return 0 or track manually

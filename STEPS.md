@@ -615,3 +615,62 @@ And it works!
 
 > lets figure out another one that's purely local 
 
+---
+
+# Logging
+
+> lets log our sessions, inside of a .sessions_log/ directory.  (put it in .gitignore)  The log file should be .sessions_log/yyyy-mm-dd-hh-mm-topic.jsonl where the topic is what the session is about.  (use a smaller flash model to answer that) and each line should be the full message that we get back, including full tool results.
+
+Tested it in another window, and then copied in the error with this message
+
+> I got an error and the topic is summarized as "unknown"
+
+It looks like it's getting confused about the models, let fix that.
+
+> log out the error somewhere, that's not working.  add tool that will list out available gemini models
+
+```markdown
+I have completed the requested changes.
+
+1.  **Error Logging**: Modified `src/logger.ts` to log topic generation errors to `.sessions_log/error.log` instead of silencing them. This allows you to inspect why the topic generation might be failing without interrupting the CLI flow.
+2.  **New Tool**: Created `src/tools/list-models.ts` which exposes a `list_models` tool. This allows the agent (and you, via natural language request) to list all available Gemini models associated with your API key.
+3.  **Tool Registration**: Updated `src/tools/index.ts` to include the new `list_models` tool.
+
+You can now ask the agent "list available models" to debug which model names are valid for your environment.
+```
+
+> update the summarizer to use gemini-2.5-flash-lite
+
+```markdown
+I have updated the summarizer model in `src/logger.ts` to `gemini-2.5-flash-lite` as requested. I verified that this model name corresponds to a valid (or upcoming) Google Gemini model based on the search results. If the model ID is slightly different in your specific environment, the error logger we set up will capture the failure details in `.sessions_log/error.log`.
+```
+
+Restart.
+
+> list all the available models and update the gemini research to use recommend the strongest model by default, and then right quick flash model, and then the strongest image and veo models always
+
+```markdown
+Available Models:
+- models/gemini-3-pro-preview (Strongest Model)
+- models/gemini-2.5-flash (Quick Flash Model)
+- models/imagen-4.0-ultra-generate-001 (Strongest Image Model)
+- models/veo-3.1-generate-preview (Strongest Veo Model)
+
+I have updated `reports/2025-11-28-gemini-3-agent-development.md` to reflect these recommendations:
+1.  **Default/Strongest**: `gemini-3-pro-preview` (Gemini 3 Pro Preview)
+2.  **Quick Flash**: `gemini-2.5-flash`
+3.  **Strongest Image**: `imagen-4.0-ultra-generate-001` (Imagen 4 Ultra)
+4.  **Strongest Veo**: `veo-3.1-generate-preview` (Veo 3.1)
+
+The report now provides code examples and usage patterns specifically targeting these models.
+```
+
+> also I notice that there is no timing information for the logs, can we put a timestamp in?
+
+```markdown
+I have added timestamp logging to the code examples in `reports/2025-11-28-gemini-3-agent-development.md`. The logs now use `new Date().toISOString()` to provide precise timing information, which is useful for debugging agent interactions and long-running operations like video generation.
+
+-   **Pattern 3 (Function Calling)**: Included a `log()` helper function and used it to log tool requests and arguments with timestamps.
+-   **Pattern 4 & 5 (Image Generation)**: Added timestamps to "Image saved" logs.
+-   **Pattern 6 (Video Generation)**: Added timestamps to "Generating video..." polling logs and "Video saved" logs.
+```

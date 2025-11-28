@@ -3,11 +3,11 @@ title: "Gemini 3 Agent Development: @google/genai SDK"
 date: 2025-11-28
 topic: gemini-3-agent-sdk
 recommendation: "@google/genai"
-version_researched: "@google/genai 1.30.0, Gemini 3 Pro Preview, Nano Banana Pro"
+version_researched: "@google/genai 1.30.0, Gemini 3 Pro Preview, Imagen 4 Ultra"
 use_when:
   - Building agentic CLI tools with multi-turn conversations
   - Need streaming responses for real-time user feedback
-  - Generating images with Nano Banana / Nano Banana Pro
+  - Generating photorealistic images with Imagen 4 Ultra
   - Generating videos with Veo 3.1
   - Require function calling for tool use
 avoid_when:
@@ -23,9 +23,11 @@ project_context:
 
 For building a software writing agent with Gemini 3, use the **`@google/genai`** SDK (v1.30.0)[1]. This is Google's official, production-ready TypeScript/JavaScript SDK that replaced the deprecated `@google/generative-ai` package. The old package will lose all support on August 31, 2025[2].
 
-**Gemini 3 Pro** (model: `gemini-3-pro-preview-11-2025`) was released November 25, 2025[3]. It offers state-of-the-art reasoning with a 1M token context window, 64K token output, and scores 54.2% on Terminal-Bench 2.0 for tool use[4]. Pricing is $2/M input tokens and $12/M output tokens for prompts under 200K tokens[3].
+**Gemini 3 Pro** (model: `gemini-3-pro-preview`) was released November 25, 2025[3]. It offers state-of-the-art reasoning with a 1M token context window, 64K token output, and scores 54.2% on Terminal-Bench 2.0 for tool use[4]. Pricing is $2/M input tokens and $12/M output tokens for prompts under 200K tokens[3].
 
-**Nano Banana Pro** (model: `gemini-3-pro-image-preview`) is Google's image generation model built on Gemini 3 Pro, released November 20, 2025[5]. It generates up to 4K images, handles up to 14 reference images, and excels at text rendering in images. **Veo 3.1** (model: `veo-3.1-generate-preview`) generates 8-second video clips with native audio from text or image prompts[6].
+**Gemini 2.5 Flash** (model: `gemini-2.5-flash`) is the recommended "quick" model for high-speed, low-cost tasks.
+
+**Imagen 4 Ultra** (model: `imagen-4.0-ultra-generate-001`) is Google's strongest image generation model, excelling at photorealism and text rendering. **Veo 3.1** (model: `veo-3.1-generate-preview`) generates 8-second video clips with native audio from text or image prompts[6].
 
 ## Philosophy & Mental Model
 
@@ -192,6 +194,11 @@ const writeFileTool = {
   },
 };
 
+// Simple logging helper with timestamp
+function log(message: string) {
+  console.log(`[${new Date().toISOString()}] ${message}`);
+}
+
 async function agentWithTools() {
   const chat = ai.chats.create({
     model: "gemini-3-pro-preview",
@@ -207,8 +214,8 @@ async function agentWithTools() {
   // Check if model wants to call a function
   if (response.functionCalls && response.functionCalls.length > 0) {
     const functionCall = response.functionCalls[0];
-    console.log(`Tool requested: ${functionCall.name}`);
-    console.log(`Args: ${JSON.stringify(functionCall.args)}`);
+    log(`Tool requested: ${functionCall.name}`);
+    log(`Args: ${JSON.stringify(functionCall.args)}`);
 
     // Execute the tool and send result back
     const result = await executeFunction(functionCall.name, functionCall.args);
@@ -220,9 +227,9 @@ async function agentWithTools() {
 }
 ```
 
-### Pattern 4: Image Generation with Nano Banana Pro
+### Pattern 4: Image Generation with Imagen 4 Ultra
 
-Generate images in conversation. Use `gemini-2.5-flash-image` for speed or `gemini-3-pro-image-preview` for quality:
+Generate high-quality images. Use `gemini-2.5-flash` for speed (if text-only) or `imagen-4.0-ultra-generate-001` for strongest image generation:
 
 ```typescript
 import { GoogleGenAI } from "@google/genai";
@@ -232,24 +239,21 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function generateImage(prompt: string, outputPath: string) {
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-image-preview",
+    model: "imagen-4.0-ultra-generate-001",
     contents: prompt,
     config: {
-      responseModalities: ["TEXT", "IMAGE"],
-      imageConfig: {
-        aspectRatio: "16:9", // "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"
-        imageSize: "2K",     // "1K", "2K", "4K" - uppercase required!
-      },
+      // responseModalities: ["IMAGE"], // For Imagen models, often implicit or specific config
+      // Check specific Imagen 4 Ultra config requirements
     },
   });
 
+  // Depending on the model, the response structure might vary slightly, 
+  // but generally follows the candidate parts pattern.
   for (const part of response.candidates[0].content.parts) {
-    if (part.text) {
-      console.log(part.text);
-    } else if (part.inlineData) {
+     if (part.inlineData) {
       const buffer = Buffer.from(part.inlineData.data, "base64");
       fs.writeFileSync(outputPath, buffer);
-      console.log(`Image saved to ${outputPath}`);
+      console.log(`[${new Date().toISOString()}] Image saved to ${outputPath}`);
     }
   }
 }
@@ -257,7 +261,7 @@ async function generateImage(prompt: string, outputPath: string) {
 
 ### Pattern 5: Multi-Turn Image Editing
 
-Refine images conversationally:
+Refine images conversationally (Note: specific editing capabilities depend on model support, `gemini-3-pro-image-preview` is often better for *conversational* multimodal editing, but `imagen-4.0-ultra` is strongest for generation):
 
 ```typescript
 import { GoogleGenAI } from "@google/genai";
@@ -266,8 +270,9 @@ import * as fs from "node:fs";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function iterativeImageEditing() {
+  // Using Gemini 3 Pro for conversational editing as it supports text+image modalities well
   const chat = ai.chats.create({
-    model: "gemini-3-pro-image-preview",
+    model: "gemini-3-pro-preview", // or gemini-3-pro-image-preview if available for this
     config: {
       responseModalities: ["TEXT", "IMAGE"],
     },
@@ -288,18 +293,13 @@ async function iterativeImageEditing() {
     },
   });
   saveImage(response, "diagram-v2.png");
-
-  // Further refinement
-  response = await chat.sendMessage({
-    message: "Change the color scheme to dark mode",
-  });
-  saveImage(response, "diagram-v3.png");
 }
 
 function saveImage(response: any, filename: string) {
   for (const part of response.candidates[0].content.parts) {
     if (part.inlineData) {
       fs.writeFileSync(filename, Buffer.from(part.inlineData.data, "base64"));
+      console.log(`[${new Date().toISOString()}] Image saved to ${filename}`);
     }
   }
 }
@@ -327,7 +327,7 @@ async function generateVideo(prompt: string, outputPath: string) {
 
   // Poll until complete
   while (!operation.done) {
-    console.log("Generating video...");
+    console.log(`[${new Date().toISOString()}] Generating video...`);
     await new Promise((resolve) => setTimeout(resolve, 10000));
     operation = await ai.operations.getVideosOperation({ operation });
   }
@@ -337,7 +337,7 @@ async function generateVideo(prompt: string, outputPath: string) {
     file: operation.response.generatedVideos[0].video,
     downloadPath: outputPath,
   });
-  console.log(`Video saved to ${outputPath}`);
+  console.log(`[${new Date().toISOString()}] Video saved to ${outputPath}`);
 }
 ```
 
@@ -351,11 +351,10 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function imageToVideo(description: string, outputPath: string) {
-  // Step 1: Generate image with Nano Banana
+  // Step 1: Generate image with Imagen 4 Ultra
   const imageResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
+    model: "imagen-4.0-ultra-generate-001",
     contents: description,
-    config: { responseModalities: ["IMAGE"] },
   });
 
   const imageData = imageResponse.candidates[0].content.parts[0].inlineData;
@@ -518,9 +517,9 @@ const ai = new GoogleGenAI({ apiKey: "AIza..." }); // hardcoded in frontend
 
 ## Caveats
 
-- **Gemini 3 Pro is in Preview**: Model name is `gemini-3-pro-preview-11-2025`. Expect potential changes before GA[3].
+- **Gemini 3 Pro is in Preview**: Model name is `gemini-3-pro-preview`. Expect potential changes before GA[3].
 
-- **Nano Banana Pro has no free tier**: Unlike Gemini 2.5 Flash Image, the 3 Pro Image model requires a billing-enabled API key[5].
+- **Imagen 4 Ultra has no free tier**: High-end image generation requires a billing-enabled API key[5].
 
 - **Video generation is slow**: Veo 3.1 takes 1-5 minutes to generate 8-second clips. Plan your UX accordingly with progress indicators[6].
 

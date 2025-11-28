@@ -2,6 +2,7 @@ import * as readline from "node:readline";
 import * as path from "node:path";
 import { Agent } from "./agent.js";
 import { CommandManager } from "./commands.js";
+import { SessionLogger } from "./logger.js";
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -10,6 +11,7 @@ if (!apiKey) {
 }
 
 const agent = new Agent({ apiKey });
+const logger = new SessionLogger(apiKey);
 const commandManager = new CommandManager(path.join(process.cwd(), ".claude", "commands"));
 
 const rl = readline.createInterface({
@@ -32,6 +34,15 @@ async function prompt(): Promise<void> {
     // Check if it's a command
     if (trimmed.startsWith('/')) {
         const handled = await commandManager.handleCommand(trimmed, agent);
+        
+        // Log session state after command
+        const history = await agent.getHistory();
+        if (history.length === 0) {
+            logger.reset();
+        } else {
+            await logger.log(history);
+        }
+
         // If handled, loop back. If not handled (unknown command), it printed error, loop back.
         // If it was quit/exit, the process would have exited.
         prompt();
@@ -51,6 +62,10 @@ async function prompt(): Promise<void> {
         process.stdout.write(chunk);
       }
       console.log();
+      
+      const history = await agent.getHistory();
+      await logger.log(history);
+
     } catch (error) {
       console.error("\nError:", error);
     }
