@@ -177,3 +177,58 @@ Research Complete
   The report includes 7 code patterns covering streaming, multi-turn chat, function calling, image generation, image editing, and
   video generation.
   ```
+
+---
+
+# Teach it to search the web
+
+New context and:
+
+> /research the easiest way we can search the web so that its useful for an LLM 
+
+Its getting a sense of what we are trying to based upon our research, so we have a shorter and shorter list of questions its interested in.  It still took 4 minutes.
+
+
+```markdown
+Research Complete
+
+  I've written a comprehensive report at reports/2025-11-28-web-search-api-for-llm.md.
+
+  Recommendation: Tavily (@tavily/core)
+
+  Why Tavily for your use case:
+
+  | Criteria      | Tavily                                  | Serper                       |
+  |---------------|-----------------------------------------|------------------------------|
+  | Simplicity    | Single call: search + extract           | Requires separate scraping   |
+  | LLM-optimized | Returns clean content ready for context | Returns only titles/snippets |
+  | Free tier     | 1,000 credits/month                     | 2,500 searches/month         |
+  | Setup         | npm i @tavily/core, one API key         | Same                         |
+
+  Quick Start
+
+  import { tavily } from "@tavily/core";
+
+  const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
+
+  // Search for code/docs - one call does everything
+  const response = await tvly.search("TypeScript zod validation examples", {
+    searchDepth: "basic",
+    maxResults: 5,
+    includeAnswer: "basic", // Optional: LLM-generated summary
+  });
+
+  // Results include actual page content, not just snippets
+  console.log(response.answer); // Quick summary
+  console.log(response.results[0].content); // Extracted content
+
+  When to use Serper instead
+
+  Use Serper ($0.001/search, 2,500 free) if you need:
+  - Raw Google SERP features (knowledge graph, People Also Ask, shopping)
+  - Image, Maps, Scholar, or Shopping search
+  - Higher volume at lower cost
+
+  The report includes integration patterns with your Gemini agent, anti-patterns to avoid, and a complete alternative section for
+  Serper when you need raw Google data.
+```
