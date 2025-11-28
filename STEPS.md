@@ -580,3 +580,38 @@ These changes ensure that the model is aware of the available research in the `r
 *   `src/context.ts`
 *   `src/prompt.ts`
 ```
+
+---
+
+# Implement slash commands
+
+> on startup the agent, look through .claude/commands for md files, and make them available when the use types e.g. /research - that would load up the research.md file and then execture it.  also we need to add a /? that lists all available commands, we should add built in ones like /clear and /quit
+
+And then for fun:
+
+
+```markdown
+% mise run dev
+[dev] $ tsx src/index.ts
+Code Editing Agent (powered by Gemini)
+Model: gemini-3-pro-preview
+Type '/?' to list available commands, or 'exit' to quit.
+
+
+[0 msgs, 0 tokens] You: /?
+
+Available commands:
+  /clear      - Clear the chat history
+  /quit       - Exit the application
+  /help       - List all available commands
+  /research   - Load and execute research.md
+
+
+[0 msgs, 0 tokens] You: /research how to capture log traces for LLMs for agent tuning
+Executing research.md...
+```
+
+And it works!
+
+> lets figure out another one that's purely local 
+

@@ -1,5 +1,7 @@
 import * as readline from "node:readline";
+import * as path from "node:path";
 import { Agent } from "./agent.js";
+import { CommandManager } from "./commands.js";
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -8,6 +10,7 @@ if (!apiKey) {
 }
 
 const agent = new Agent({ apiKey });
+const commandManager = new CommandManager(path.join(process.cwd(), ".claude", "commands"));
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -21,7 +24,21 @@ async function prompt(): Promise<void> {
   rl.question(`\n[${msgCount} msgs, ${contextSize} tokens] You: `, async (input) => {
     const trimmed = input.trim();
 
-    if (!trimmed || trimmed === "exit" || trimmed === "quit") {
+    if (!trimmed) {
+        prompt();
+        return;
+    }
+
+    // Check if it's a command
+    if (trimmed.startsWith('/')) {
+        const handled = await commandManager.handleCommand(trimmed, agent);
+        // If handled, loop back. If not handled (unknown command), it printed error, loop back.
+        // If it was quit/exit, the process would have exited.
+        prompt();
+        return;
+    }
+
+    if (trimmed === "exit" || trimmed === "quit") {
       console.log("Goodbye!");
       rl.close();
       return;
@@ -42,7 +59,10 @@ async function prompt(): Promise<void> {
   });
 }
 
-console.log("Code Editing Agent (powered by Gemini)");
-console.log(`Model: ${agent.currentModel}`);
-console.log("Type 'exit' to quit.\n");
-prompt();
+(async () => {
+    await commandManager.loadCommands();
+    console.log("Code Editing Agent (powered by Gemini)");
+    console.log(`Model: ${agent.currentModel}`);
+    console.log("Type '/?' to list available commands, or 'exit' to quit.\n");
+    prompt();
+})();

@@ -1,145 +1,11 @@
-% mise run dev
-[dev] $ tsx src/index.ts
-Code Editing Agent (powered by Gemini)
-Type 'exit' to quit.
-
-
-You: Ok, lets update so we have a context object that has the date and say a list of files, and that theres a prompt.ts file that will generate the system prompt -- it gets a list of tools and the context and returns it. Also on start up lets print the current model -- it should defualt to the latest gemini 3 -- that it's using and also the readline prompt should have the number of messages in the chat object and perhaps the size of the context. 
-
-Agent: I will start by listing the files in the directory to understand the project structure.
-
-[Executing list_files...]
-[Result: .claude/
-.env
-.git/
-.gitignore
-BUILD_PLAN.md
-OUTPUT.txt
-STEPS.md
-mise.toml
-node_modules/
-package-loc...]
-I will list the files in the `src/` directory.
-
-[Executing list_files...]
-[Result: __tests__/
-agent.ts
-index.ts
-tools/]
-I will read the contents of `src/index.ts`.
-
-[Executing read_file...]
-[Result: import * as readline from "node:readline";
-import { Agent } from "./agent.js";
-
-const apiKey = proce...]
-I will read the contents of `src/agent.ts`.
-
-[Executing read_file...]
-[Result: import { GoogleGenAI, Chat } from "@google/genai";
-import { tools, getToolByName, getToolDeclaration...]
-I will read `src/tools/index.ts`.
-
-[Executing read_file...]
-[Result: import type { ToolDefinition } from "./types.js";
-import { readFileTool } from "./read-file.js";
-imp...]
-I will read `src/tools/types.ts`.
-
-[Executing read_file...]
-[Result: import { Type } from "@google/genai";
-
-export interface ToolDefinition {
-  name: string;
-  descripti...]
-I will search for "gemini 3 pro preview model" to verify if it exists.
-
-[Executing web_search...]
-[Result: Summary: Gemini 3 Pro Preview is available on Google's Vertex AI and AI Studio. It offers advanced r...]
-I will create `src/context.ts`.
-
-[Executing edit_file...]
-[Result: OK (created new file)]
-I will create `src/prompt.ts`.
-
-[Executing edit_file...]
-[Result: OK (created new file)]
-I will search for "@google/genai Chat class properties" to understand how to access history and token counts.
-
-[Executing web_search...]
-[Result: Summary: The Google GenAI SDK's Chat class history property is included when starting a session, not...]
-I will read `src/agent.ts` again to make sure I have the imports right and context.
-
-[Executing read_file...]
-[Result: import { GoogleGenAI, Chat } from "@google/genai";
-import { tools, getToolByName, getToolDeclaration...]
-I will edit `src/agent.ts` to implement the requested changes.
-
-[Executing edit_file...]
-[Result: OK]
-I will read `src/index.ts`.
-
-[Executing read_file...]
-[Result: import * as readline from "node:readline";
-import { Agent } from "./agent.js";
-
-const apiKey = proce...]
-I will edit `src/index.ts`.
-
-[Executing edit_file...]
-[Result: OK]
-I will read `package.json` to see available scripts.
-
-[Executing read_file...]
-[Result: {
-  "name": "agent",
-  "type": "module",
-  "scripts": {
-    "dev": "tsx src/index.ts",
-    "test": "...]
-I will run `npm run typecheck` to verify the code.
-
-[Executing list_files...]
-[Result: .claude/
-.env
-.git/
-.gitignore
-BUILD_PLAN.md
-OUTPUT.txt
-STEPS.md
-mise.toml
-node_modules/
-package-loc...]
-I have implemented the requested changes.
-
-1.  **Created `src/context.ts`**: Defines the `Context` interface with `date` and `files`, and a `createContext` function.
-2.  **Created `src/prompt.ts`**: Contains `generateSystemPrompt` which builds the system prompt dynamically using the provided tools and context.
-3.  **Updated `src/agent.ts`**:
-    *   Initialize `Context` on start.
-    *   Use `generateSystemPrompt` to set the system instruction.
-    *   Added `currentModel` getter.
-    *   Added `getMessageCount()` and `getContextSize()` methods to retrieve chat statistics (message count attempts to access chat history, token count uses `countTokens` API).
-    *   Default model remains `gemini-3-pro-preview` (as "latest gemini 3").
-4.  **Updated `src/index.ts`**:
-    *   Prints the current model on startup.
-    *   Updates the readline prompt to display message count and context size (in tokens).
-
-The application now supports a dynamic context-aware system prompt and provides better visibility into the chat state.
-
-**Note**: The context size calculation relies on the `chat.getHistory()` method and `countTokens` API. If the `Chat` object implementation in the SDK changes or doesn't expose history as expected, these values might default to 0.
-
-
-
-
-
-% mise run dev
+% mise run dev                                          
 [dev] $ tsx src/index.ts
 Code Editing Agent (powered by Gemini)
 Model: gemini-3-pro-preview
 Type 'exit' to quit.
 
 
-[0 msgs, 0 tokens] You: update the context so that it includes the frontmatter of each of the files in reports/ with the name of the file, so that the model knows what research is available
+[0 msgs, 0 tokens] You: on startup the agent, look through .claude/commands for md files, and make them available when the use types e.g. /research - that would load up the research.md file and then execture it.  also we need to add a /? that lists all available commands, we should add built in ones like /clear and /quit
 
 Agent: 
 [Executing list_files...]
@@ -162,43 +28,9 @@ index.ts
 prompt.ts
 tools/]
 
-[Executing read_file...]
-[Result: export interface Context {
-  date: string;
-  files: string[];
-}
-
-export async function createContext...]
-
 [Executing list_files...]
-[Result: 2025-11-28-gemini-3-agent-development.md
-2025-11-28-typescript-project-setup.md
-2025-11-28-web-searc...]
-
-[Executing read_file...]
-[Result: ---
-title: "Gemini 3 Agent Development: @google/genai SDK"
-date: 2025-11-28
-topic: gemini-3-agent-sd...]
-
-[Executing read_file...]
-[Result: {
-  "name": "agent",
-  "type": "module",
-  "scripts": {
-    "dev": "tsx src/index.ts",
-    "test": "...]
-
-[Executing read_file...]
-[Result: export interface Context {
-  date: string;
-  files: string[];
-}
-
-export async function createContext...]
-
-[Executing edit_file...]
-[Result: OK]
+[Result: commands/
+settings.local.json]
 
 [Executing read_file...]
 [Result: import * as readline from "node:readline";
@@ -210,80 +42,78 @@ const apiKey = proce...]
 [Result: import { GoogleGenAI, Chat } from "@google/genai";
 import { tools, getToolByName, getToolDeclaration...]
 
-[Executing read_file...]
-[Result: import { ToolDefinition } from "./tools/index.js";
-import { Context } from "./context.js";
+[Executing list_files...]
+[Result: research.md]
 
-export f...]
+[Executing edit_file...]
+[Result: OK (created new file)]
+
+[Executing read_file...]
+[Result: import * as readline from "node:readline";
+import { Agent } from "./agent.js";
+
+const apiKey = proce...]
 
 [Executing edit_file...]
 [Result: OK]
 
-[Executing web_search...]
-[Result: Summary: "npm run typecheck" checks for TypeScript errors in project files using vue-tsc. It runs wi...]
-
 [Executing list_files...]
-[Result: .claude/
-.env
-.git/
-.gitignore
-BUILD_PLAN.md
-OUTPUT.txt
-STEPS.md
-mise.toml
-node_modules/
-package-loc...]
+[Result: __tests__/
+agent.ts
+commands.ts
+context.ts
+index.ts
+prompt.ts
+tools/]
 
-[Executing list_files...]
-[Result: tools.test.ts]
-The following changes have been made to update the context with research reports:
-
-1.  **Modified `src/context.ts`**:
-    *   Updated the `Context` interface to include a `reports` array containing `filename` and `frontmatter`.
-    *   Updated `createContext` function to read `.md` files from the `reports/` directory.
-    *   Implemented logic to extract YAML frontmatter (content between `---` delimiters) from the report files.
-
-2.  **Modified `src/prompt.ts`**:
-    *   Updated `generateSystemPrompt` to include the list of available research reports (filename and frontmatter) in the system prompt generated for the AI model.
-
-These changes ensure that the model is aware of the available research in the `reports/` folder when it starts.
-
-**Files Edited:**
-
-*   `src/context.ts`
-*   `src/prompt.ts`
-
-[55 msgs, 9723 tokens] You: make sure that the filename associateed with the prompt is correct and has reports in the front 
-
-Agent: 
 [Executing read_file...]
-[Result: import * as fs from 'fs/promises';
-import * as path from 'path';
+[Result: import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { Agent } from './agent.js'...]
 
-export interface Context {
-  date:...]
+[Executing read_file...]
+[Result: {
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "...]
+
+[Executing read_file...]
+[Result: # Research Agent: Find the Best Library or Technique
+
+You are a research agent that helps find the o...]
 
 [Executing edit_file...]
 [Result: OK]
 
-[Executing read_file...]
-[Result: import { ToolDefinition } from "./tools/index.js";
-import { Context } from "./context.js";
+[Executing list_files...]
+[Result: __tests__/
+agent.ts
+commands.ts
+context.ts
+index.ts
+prompt.ts
+tools/]
+The agent has been updated to support loading and executing commands from markdown files in `.claude/commands`.
 
-export f...]
+**Changes:**
+1.  **Created `src/commands.ts`**: This file contains the `CommandManager` class which:
+    *   Scans `.claude/commands` for `.md` files on startup.
+    *   Registers them as commands (e.g., `research.md` becomes `/research`).
+    *   Registers built-in commands: `/clear`, `/quit`, `/exit`, `/help`, `/?`.
+    *   Handles argument substitution in markdown files (replaces `$ARGUMENTS` or appends arguments).
+2.  **Modified `src/index.ts`**:
+    *   Initializes `CommandManager`.
+    *   Loads commands on startup.
+    *   Intercepts user input starting with `/` to delegate to `CommandManager`.
+    *   Provides a help message on startup.
 
-[Executing web_search...]
-[Result: Summary: "npm run typecheck" checks for TypeScript errors in project files using vue-tsc. It runs wi...]
+**Usage:**
+*   **List commands:** Type `/?` or `/help`.
+*   **Execute custom command:** Type `/[command_name]` (e.g., `/research`).
+*   **Pass arguments:** Type `/[command_name] [arguments]` (e.g., `/research best validation library`). The arguments will replace `$ARGUMENTS` in the markdown file or be appended to it.
+*   **Built-in commands:**
+    *   `/clear`: Resets the chat history.
+    *   `/quit` or `/exit`: Exits the application.
 
-[Executing read_file...]
-[Result: import * as fs from 'fs/promises';
-import * as path from 'path';
-
-export interface Context {
-  date:...]
-The `src/context.ts` file has been updated to include the `reports/` directory prefix in the filename for each research report. This ensures that the model sees the correct relative path (e.g., `reports/2025-11-28-gemini-3-agent-development.md`) in the system prompt.
-
-**Files Edited:**
-- `src/context.ts`: Updated the `reports` array population to prepend `${reportsDir}/` to the filename.
-
-[78 msgs, 11448 tokens] You: 
+[55 msgs, 8969 tokens] You: 
