@@ -1,0 +1,21 @@
+wschenk@Wills-MacBook-Pro-2 planning % mise use node@latest
+
+mise ~/Desktop/planning/mise.toml tools: node@25.2.1
+wschenk@Wills-MacBook-Pro-2 planning % mise use npm:@anthropic-ai/claude-code
+
+mise ~/Desktop/planning/mise.toml tools: npm:@anthropic-ai/claude-code@2.0.50
+wschenk@Wills-MacBook-Pro-2 planning % claude
+
+╭─── Claude Code v2.0.55 ───────────────────────────────────────────────────────────────────────╮
+│                           │ Tips for getting started                                          │
+│     Welcome back Will!    │ Run /init to create a CLAUDE.md file with instructions for Claude │
+│                           │ ───────────────────────────────────────────────────────────────── │
+│          ▐▛███▜▌          │ Recent activity                                                   │
+│         ▝▜█████▛▘         │ No recent activity                                                │
+│           ▘▘ ▝▝           │                                                                   │
+│                           │                                                                   │
+│   Opus 4.5 · Claude Max   │                                                                   │
+│    ~/Desktop/planning     │                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+
+wschenk@Wills-MacBook-Pro-2 planning % 
