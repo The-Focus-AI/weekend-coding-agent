@@ -4,6 +4,9 @@ import { listFilesTool } from "./list-files.js";
 import { editFileTool } from "./edit-file.js";
 import { webSearchTool } from "./web-search.js";
 import { listModelsTool } from "./list-models.js";
+import { listSessionsTool } from "./list-sessions.js";
+import { summarizeSessionTool } from "./summarize-session.js";
+import { resumeSessionTool } from "./resume-session.js";
 
 export type { ToolDefinition };
 
@@ -13,6 +16,9 @@ export const tools: ToolDefinition[] = [
   editFileTool,
   webSearchTool,
   listModelsTool,
+  listSessionsTool,
+  summarizeSessionTool,
+  resumeSessionTool,
 ];
 
 export function getToolByName(name: string): ToolDefinition | undefined {

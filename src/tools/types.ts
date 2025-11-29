@@ -1,4 +1,10 @@
-import { Type } from "@google/genai";
+import { Type, GoogleGenAI } from "@google/genai";
+
+export interface ToolContext {
+  ai: GoogleGenAI;
+  logDir: string;
+  loadSession: (history: any[]) => Promise<void>;
+}
 
 export interface ToolDefinition {
   name: string;
@@ -11,5 +17,5 @@ export interface ToolDefinition {
     }>;
     required: string[];
   };
-  execute: (args: Record<string, unknown>) => Promise<string>;
+  execute: (args: Record<string, unknown>, context: ToolContext) => Promise<string>;
 }

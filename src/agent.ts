@@ -2,6 +2,7 @@ import { GoogleGenAI, Chat } from "@google/genai";
 import { tools, getToolByName, getToolDeclarations } from "./tools/index.js";
 import { Context, createContext } from "./context.js";
 import { generateSystemPrompt } from "./prompt.js";
+import type { ToolContext } from "./tools/types.js";
 
 export interface AgentConfig {
   apiKey: string;
@@ -18,7 +19,7 @@ export class Agent {
 
   constructor(config: AgentConfig) {
     this.ai = new GoogleGenAI({ apiKey: config.apiKey });
-    this.model = config.model || "gemini-3-pro-preview";
+    this.model = config.model || process.env.GEMINI_MODEL || "gemini-3-pro-preview";
     this.systemInstruction = config.systemInstruction;
   }
 
@@ -116,6 +117,28 @@ export class Agent {
   private async *executeFunctionCalls(
     calls: Array<{ name: string; args: Record<string, unknown> }>
   ): AsyncGenerator<string> {
+    const currentChat = this.chat; // Capture current chat instance
+
+    const context: ToolContext = {
+        ai: this.ai,
+        logDir: ".sessions_log",
+        loadSession: async (history: any[]) => {
+            if (!this.context) {
+                 this.context = await createContext();
+            }
+            const generatedSystemPrompt = generateSystemPrompt(tools, this.context);
+            
+            this.chat = this.ai.chats.create({
+                model: this.model,
+                config: {
+                    systemInstruction: this.systemInstruction || generatedSystemPrompt,
+                    tools: [{ functionDeclarations: getToolDeclarations() }],
+                    history: history
+                }
+            });
+        }
+    };
+
     // Execute all function calls and collect their results
     const functionResponses: Array<{
       functionResponse: { name: string; response: { result: string } };
@@ -137,7 +160,7 @@ export class Agent {
       }
 
       try {
-        const result = await tool.execute(call.args);
+        const result = await tool.execute(call.args, context);
         yield `[Result: ${result.slice(0, 100)}${result.length > 100 ? "..." : ""}]\n`;
         functionResponses.push({
           functionResponse: {
@@ -154,6 +177,12 @@ export class Agent {
           },
         });
       }
+    }
+
+    // Check if chat instance changed (e.g. via resume_session)
+    if (this.chat !== currentChat) {
+        yield `\n[System: Session resumed successfully. Previous context abandoned.]\n`;
+        return; 
     }
 
     // Send ALL function responses back to the model in a single message

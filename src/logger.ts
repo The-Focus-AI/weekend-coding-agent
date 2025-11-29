@@ -7,6 +7,7 @@ export class SessionLogger {
   private logFile: string | null = null;
   private loggedCount = 0;
   private ai: GoogleGenAI;
+  private lastFirstMessage: string | null = null;
 
   constructor(apiKey: string) {
     this.ai = new GoogleGenAI({ apiKey });
@@ -63,8 +64,23 @@ export class SessionLogger {
   }
 
   async log(messages: any[]) {
-    // Check if we have new messages to log
-    if (messages.length <= this.loggedCount) return;
+    if (messages.length === 0) return;
+
+    // Check if the conversation has changed completely (e.g. resume session)
+    const currentFirstMessage = JSON.stringify(messages[0]);
+    if (this.lastFirstMessage && this.lastFirstMessage !== currentFirstMessage) {
+        // Conversation changed root! Start a new file.
+        this.reset();
+    }
+    this.lastFirstMessage = currentFirstMessage;
+
+    // Check if we have new messages to log, or if history shrunk
+    if (messages.length < this.loggedCount) {
+         this.reset();
+         this.lastFirstMessage = currentFirstMessage;
+    } else if (messages.length <= this.loggedCount) {
+        return;
+    }
 
     if (!this.logFile) {
         // Ensure directory exists
@@ -95,5 +111,6 @@ export class SessionLogger {
   reset() {
       this.logFile = null;
       this.loggedCount = 0;
+      this.lastFirstMessage = null;
   }
 }
