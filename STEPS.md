@@ -793,3 +793,36 @@ The last session, **2025-11-29-04-30: model-agent-config-updates**, focused on u
 
 All requested model updates were verified or implemented.
 ```
+
+---
+
+# Build a better interface
+
+ /research how to create a tui using ink, I want to have a text box on the bottom that you can enter in a potientally a paragraph of text, then a scrolling window on top that gets a series of chat messages that we want to style either in markdown or in an expandable "tool call with arguments and expandable responses", and then an option panel on the right side that shows for example a list of files changed.  And i want to move focus between them to when it's highlighted you can say scroll up and down or some other function
+
+```markdown
+I'll research the best libraries and patterns in the Ink ecosystem to build your 3-pane TUI. First, I need to clarify a few details to choose the right components:
+
+1.  **Input Complexity:** For the "paragraph of text" input, do you need full editor capabilities (moving cursor up/down lines, text selection, copy/paste) inside the box, or is a simpler "type and press enter" experience sufficient?
+2.  **Navigation Style:** How do you envision moving focus between the three panels? Do you prefer cycling through them (like `Tab` key) or using specific shortcuts (e.g., `Ctrl+1`, `Ctrl+2`) to jump directly?
+3.  **Rendering Limits:** Will the "scrolling window" contain massive amounts of history (requiring virtualized rendering for performance) or just the recent context of a conversation?
+
+(You can answer briefly, e.g., "Full editor, shortcuts, virtualized".)
+```
+
+ > full input complexity, probably tab to navigate through, and probably a lot of data.  it should align with our session tracking stuff.
+
+ ```markdown
+ Research complete. I have created a detailed report recommending **Ink** with specific patterns for your 3-pane layout, focus management, and component choices.
+
+**Report Location:** `reports/2025-12-01-tui-development.md`
+
+**Key Recommendations:**
+- **Framework:** `ink` (React for CLI).
+- **Layout:** Flexbox using `Box` components.
+- **Input:** `ink-text-area` for the multi-line bottom input.
+- **Chat:** `ink-markdown` for rendering messages, with a manual "windowing" pattern for scrolling performance.
+- **Navigation:** `useFocusManager` to cycle tabs.
+
+You can now proceed to implement the TUI by following the "Core Usage Patterns" section in the report.
+```
