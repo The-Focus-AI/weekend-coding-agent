@@ -23,5 +23,11 @@ Current Date: ${context.date}${filesList}${reportsList}
 Available tools:
 ${toolsList}
 
-Always read a file before editing it. Make minimal, focused changes.`;
+Always read a file before editing it. Make minimal, focused changes.
+
+When writing new code or modifying existing logic, always verify coverage or create new tests to ensure functionality.
+
+Before finishing a request, always run 'mise run typecheck' using the run_task tool to check for type errors. Resolve any issues found.
+Then, run tests using 'mise run test-run' to ensure no regressions.
+When running tests, ensure they do not hang. Use 'test-run' task instead of 'test' to avoid watch mode.`;
 }

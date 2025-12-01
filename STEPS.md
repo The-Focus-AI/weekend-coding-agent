@@ -826,3 +826,105 @@ I'll research the best libraries and patterns in the Ink ecosystem to build your
 
 You can now proceed to implement the TUI by following the "Core Usage Patterns" section in the report.
 ```
+
+---
+
+# Some tooling and verifications
+
+> add a tool that lets the agent call pnpm to install and remove packages, and another mise-task-runner task that lets the agent run tasks.  We should use mise to manage tasks.  Then update the system instructions to make sure that we run mise typecheck and resolve the issues before finishing, and then run testing.  Also make sure that npm test doesn't hang
+
+```markdown
+I have successfully implemented the requested changes.
+
+1.  **Added `manage_packages` tool**: Created `src/tools/manage-packages.ts` to allow the agent to install (`add`) and remove packages using `pnpm`.
+2.  **Added `run_task` tool**: Created `src/tools/run-task.ts` to allow the agent to run tasks defined in `mise.toml` (or other mise tasks) using `mise run`.
+3.  **Registered Tools**: Updated `src/tools/index.ts` to include the new `managePackagesTool` and `runTaskTool`.
+4.  **Updated System Instructions**: Modified `src/prompt.ts` to instruct the agent to:
+    *   Always run `mise run typecheck` and resolve issues before finishing.
+    *   Run `mise run test-run` (which executes `vitest run`) to ensure tests pass without hanging (avoiding watch mode).
+
+The agent now has the capability to manage dependencies and run project tasks, with explicit instructions to verify its work via type-checking and testing.
+```
+
+In a new session:
+
+> what tools do you have
+
+```markdown
+Agent: I have access to the following tools to help you with your code:
+
+**File & System Operations**
+*   `read_file`: Read the contents of a file.
+*   `edit_file`: Create or modify files.
+*   `list_files`: List files and directories in the project.
+*   `manage_packages`: Install or remove npm packages (using `pnpm`).
+*   `run_task`: Run defined tasks (like tests or typechecks) using `mise`.
+
+**Research & Knowledge**
+*   `web_search`: Search the web for documentation or technical info.
+*   `list_models`: List available Gemini models.
+
+**Session Management**
+*   `list_sessions`: View past conversation sessions.
+*   `summarize_session`: Generate a report on a previous session.
+*   `resume_session`: Switch context to a previous session.
+
+If you were asking about the tools installed in your project environment (like `mise` or `pnpm`), I can check that for you as well using `list_files` or `read_file`. Just let me know!
+
+```
+
+> how are we looking for code quality?  can you run typechecking and the tests and see where we stand?
+
+```markdown
+The code quality check is complete. I've resolved the type errors and verified that all tests are passing.
+
+Here's what I did:
+1.  **Fixed `src/agent.ts`**: Corrected the configuration object in the `chats.create` call. The `history` property was incorrectly nested inside `config` and has been moved to the top level.
+2.  **Updated `src/__tests__/tools.test.ts`**: The tool execution tests were missing the required context argument. I added a `mockContext` and updated the tests to pass it correctly.
+
+**Current Status:**
+*   **Typecheck**: Passed (No errors)
+*   **Tests**: Passed (5/5)
+
+We are now in a good state to proceed with further development.
+```
+
+> can you look through the code to identify which sections need testing?  And update the prompt so it makes surethat all new code has tests
+
+```markdown
+I have analyzed the code and identified the following sections that currently lack test coverage:
+
+**Missing Tool Tests:**
+*   `src/tools/list-models.ts`
+*   `src/tools/list-sessions.ts`
+*   `src/tools/manage-packages.ts`
+*   `src/tools/resume-session.ts`
+*   `src/tools/run-task.ts`
+*   `src/tools/summarize-session.ts`
+*   `src/tools/web-search.ts`
+
+**Missing Core Logic Tests:**
+*   `src/agent.ts` (Core loop, message handling)
+*   `src/context.ts` (Context loading/creation)
+*   `src/prompt.ts` (Prompt generation - ensure context is correctly formatted)
+*   `src/commands.ts` (CLI argument parsing)
+
+I have also updated the system prompt in `src/prompt.ts` to explicitly instruct the agent to "verify coverage or create new tests to ensure functionality" when writing or modifying code.
+
+Would you like me to start implementing tests for any of these specific sections?
+```
+
+> yes
+
+197 messages later and it's done.
+
+```markdown
+I've completed the request. I have:
+
+1.  Analyzed the codebase and identified sections missing tests: `prompt.ts`, `context.ts`, `agent.ts`, `commands.ts`, and several tools (`list-models`, `list-sessions`, `resume-session`, `summarize-session`, `run-task`, `manage-packages`, `web-search`).
+2.  Updated `src/prompt.ts` to instruct the agent to verify coverage and create tests for new/modified code.
+3.  Implemented a comprehensive test suite covering all identified areas, resulting in 31 passing tests.
+4.  Verified all tests pass.
+
+I am ready to hand off.
+```

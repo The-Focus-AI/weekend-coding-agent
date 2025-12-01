@@ -4,8 +4,15 @@ import * as path from "node:path";
 import { readFileTool } from "../tools/read-file.js";
 import { listFilesTool } from "../tools/list-files.js";
 import { editFileTool } from "../tools/edit-file.js";
+import { ToolContext } from "../tools/types.js";
 
 const TEST_DIR = ".test-sandbox";
+
+const mockContext: ToolContext = {
+  ai: {} as any,
+  logDir: TEST_DIR,
+  loadSession: async () => {},
+};
 
 describe("tools", () => {
   beforeEach(async () => {
@@ -19,12 +26,12 @@ describe("tools", () => {
   describe("read_file", () => {
     it("reads existing file", async () => {
       await fs.writeFile(path.join(TEST_DIR, "test.txt"), "hello world");
-      const result = await readFileTool.execute({ path: `${TEST_DIR}/test.txt` });
+      const result = await readFileTool.execute({ path: `${TEST_DIR}/test.txt` }, mockContext);
       expect(result).toBe("hello world");
     });
 
     it("returns error for missing file", async () => {
-      const result = await readFileTool.execute({ path: `${TEST_DIR}/missing.txt` });
+      const result = await readFileTool.execute({ path: `${TEST_DIR}/missing.txt` }, mockContext);
       expect(result).toContain("Error: File not found");
     });
   });
@@ -35,7 +42,7 @@ describe("tools", () => {
       await fs.writeFile(path.join(TEST_DIR, "b.txt"), "");
       await fs.mkdir(path.join(TEST_DIR, "subdir"));
 
-      const result = await listFilesTool.execute({ path: TEST_DIR });
+      const result = await listFilesTool.execute({ path: TEST_DIR }, mockContext);
       expect(result).toContain("a.txt");
       expect(result).toContain("b.txt");
       expect(result).toContain("subdir/");
@@ -50,7 +57,7 @@ describe("tools", () => {
         path: `${TEST_DIR}/edit.txt`,
         old_str: "world",
         new_str: "universe",
-      });
+      }, mockContext);
 
       expect(result).toBe("OK");
       const content = await fs.readFile(path.join(TEST_DIR, "edit.txt"), "utf-8");
@@ -62,7 +69,7 @@ describe("tools", () => {
         path: `${TEST_DIR}/new.txt`,
         old_str: "",
         new_str: "new content",
-      });
+      }, mockContext);
 
       expect(result).toBe("OK (created new file)");
       const content = await fs.readFile(path.join(TEST_DIR, "new.txt"), "utf-8");

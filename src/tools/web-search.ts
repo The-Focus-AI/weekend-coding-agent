@@ -2,9 +2,6 @@ import { Type } from "@google/genai";
 import { tavily } from "@tavily/core";
 import type { ToolDefinition } from "./types.js";
 
-const apiKey = process.env.TAVILY_API_KEY;
-const tvly = apiKey ? tavily({ apiKey }) : null;
-
 export const webSearchTool: ToolDefinition = {
   name: "web_search",
   description: "Search the web for current documentation, code examples, or technical information. Use when you need up-to-date information beyond your training data.",
@@ -19,9 +16,12 @@ export const webSearchTool: ToolDefinition = {
     required: ["query"],
   },
   async execute(args) {
-    if (!tvly) {
+    const apiKey = process.env.TAVILY_API_KEY;
+    if (!apiKey) {
       return "Error: TAVILY_API_KEY not configured";
     }
+
+    const tvly = tavily({ apiKey });
 
     const query = args.query as string;
     const response = await tvly.search(query, {

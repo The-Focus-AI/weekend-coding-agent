@@ -7,6 +7,8 @@ import { listModelsTool } from "./list-models.js";
 import { listSessionsTool } from "./list-sessions.js";
 import { summarizeSessionTool } from "./summarize-session.js";
 import { resumeSessionTool } from "./resume-session.js";
+import { managePackagesTool } from "./manage-packages.js";
+import { runTaskTool } from "./run-task.js";
 
 export type { ToolDefinition };
 
@@ -19,6 +21,8 @@ export const tools: ToolDefinition[] = [
   listSessionsTool,
   summarizeSessionTool,
   resumeSessionTool,
+  managePackagesTool,
+  runTaskTool,
 ];
 
 export function getToolByName(name: string): ToolDefinition | undefined {

@@ -133,8 +133,8 @@ export class Agent {
                 config: {
                     systemInstruction: this.systemInstruction || generatedSystemPrompt,
                     tools: [{ functionDeclarations: getToolDeclarations() }],
-                    history: history
-                }
+                },
+                history: history
             });
         }
     };
