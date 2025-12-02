@@ -2,10 +2,15 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Agent } from './agent.js';
 
-interface Command {
+export interface CommandContext {
+    log: (message: string) => void;
+    sendMessage: (message: string) => Promise<void>;
+}
+
+export interface Command {
   name: string;
   description: string;
-  execute: (agent: Agent, args: string[]) => Promise<void>;
+  execute: (agent: Agent, args: string[], context: CommandContext) => Promise<void>;
 }
 
 export class CommandManager {
@@ -23,17 +28,17 @@ export class CommandManager {
     this.registerCommand({
       name: 'clear',
       description: 'Clear the chat history',
-      execute: async (agent) => {
+      execute: async (agent, _args, { log }) => {
         agent.reset();
-        console.log("Chat history cleared.");
+        log("Chat history cleared.");
       }
     });
 
     this.registerCommand({
       name: 'quit',
       description: 'Exit the application',
-      execute: async () => {
-        console.log("Goodbye!");
+      execute: async (_agent, _args, { log }) => {
+        log("Goodbye!");
         process.exit(0);
       }
     });
@@ -41,8 +46,8 @@ export class CommandManager {
     this.registerCommand({
         name: 'exit',
         description: 'Exit the application',
-        execute: async () => {
-            console.log("Goodbye!");
+        execute: async (_agent, _args, { log }) => {
+            log("Goodbye!");
             process.exit(0);
         }
     });
@@ -50,13 +55,13 @@ export class CommandManager {
     this.registerCommand({
       name: 'help',
       description: 'List all available commands',
-      execute: async () => this.listCommands()
+      execute: async (_agent, _args, { log }) => this.listCommands(log)
     });
     
     this.registerCommand({
       name: '?',
       description: 'List all available commands',
-      execute: async () => this.listCommands()
+      execute: async (_agent, _args, { log }) => this.listCommands(log)
     });
 
     // Load custom commands from .md files
@@ -70,28 +75,20 @@ export class CommandManager {
           this.registerCommand({
             name: commandName,
             description: `Load and execute ${file}`,
-            execute: async (agent, args) => {
+            execute: async (agent, args, { log, sendMessage }) => {
               let content = fs.readFileSync(filePath, 'utf-8');
               
-              // Simple argument replacement if the prompt template supports it
+              // Simple argument replacement
               if (content.includes('$ARGUMENTS')) {
                   const argsText = args.join(' ');
                   content = content.replace('$ARGUMENTS', argsText);
               } else if (args.length > 0) {
-                  // If no placeholder but args provided, append them
                   content += `\n\nUser Input: ${args.join(' ')}`;
               }
               
-              console.log(`Executing ${file}...`);
-              process.stdout.write("\nAgent: ");
-              try {
-                for await (const chunk of await agent.sendMessage(content)) {
-                    process.stdout.write(chunk);
-                }
-              } catch (error) {
-                console.error("\nError executing command:", error);
-              }
-              console.log();
+              log(`Executing ${file}...`);
+              // Delegate to the context's sendMessage to handle streaming/UI
+              await sendMessage(content);
             }
           });
         }
@@ -103,7 +100,7 @@ export class CommandManager {
     this.commands.set(command.name, command);
   }
 
-  async handleCommand(input: string, agent: Agent): Promise<boolean> {
+  async handleCommand(input: string, agent: Agent, context: CommandContext): Promise<boolean> {
     if (!input.startsWith('/')) return false;
 
     const args = input.slice(1).trim().split(/\s+/);
@@ -113,20 +110,19 @@ export class CommandManager {
 
     const command = this.commands.get(commandName);
     if (command) {
-      await command.execute(agent, args);
+      await command.execute(agent, args, context);
       return true;
     }
 
-    console.log(`Unknown command: /${commandName}`);
+    context.log(`Unknown command: /${commandName}`);
     return true;
   }
 
-  private listCommands() {
-    console.log("\nAvailable commands:");
+  private listCommands(log: (msg: string) => void) {
+    log("\nAvailable commands:");
     for (const [name, cmd] of this.commands.entries()) {
-        if (name === "?" || name === "exit") continue; // Hide alias/duplicate
-        console.log(`  /${name.padEnd(10)} - ${cmd.description}`);
+        if (name === "?" || name === "exit") continue; 
+        log(`  /${name.padEnd(10)} - ${cmd.description}`);
     }
-    console.log();
   }
 }

@@ -10,6 +10,10 @@ node = "22"
 description = "Run agent in development mode"
 run = "tsx src/index.ts"
 
+[tasks.start]
+description = "Run the built agent"
+run = "node dist/index.js"
+
 [tasks.test]
 description = "Run tests in watch mode"
 run = "vitest"
@@ -21,3 +25,7 @@ run = "vitest run"
 [tasks.typecheck]
 description = "Type check"
 run = "tsc --noEmit"
+
+[tasks.build]
+description = "Build the project"
+run = "tsc"

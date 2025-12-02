@@ -9,6 +9,7 @@ vi.mock("../agent.js"); // Mock Agent class
 describe("CommandManager", () => {
     let agent: Agent;
     let manager: CommandManager;
+    let mockContext: any;
 
     beforeEach(() => {
         agent = new Agent({ apiKey: "key" });
@@ -20,6 +21,11 @@ describe("CommandManager", () => {
         
         // Mock fs default behaviors
         (fs.existsSync as any).mockReturnValue(false);
+
+        mockContext = {
+            log: vi.fn(),
+            sendMessage: vi.fn().mockResolvedValue(undefined)
+        };
     });
 
     afterEach(() => {
@@ -30,13 +36,13 @@ describe("CommandManager", () => {
         await manager.loadCommands();
         
         // Test /clear
-        await manager.handleCommand("/clear", agent);
+        await manager.handleCommand("/clear", agent, mockContext);
         expect(agent.reset).toHaveBeenCalled();
+        expect(mockContext.log).toHaveBeenCalledWith("Chat history cleared.");
 
         // Test /help
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-        await manager.handleCommand("/help", agent);
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Available commands"));
+        await manager.handleCommand("/help", agent, mockContext);
+        expect(mockContext.log).toHaveBeenCalledWith(expect.stringContaining("Available commands"));
     });
 
     it("loads custom commands from files", async () => {
@@ -46,9 +52,10 @@ describe("CommandManager", () => {
 
         await manager.loadCommands();
         
-        await manager.handleCommand("/custom", agent);
+        await manager.handleCommand("/custom", agent, mockContext);
         
-        expect(agent.sendMessage).toHaveBeenCalledWith(expect.stringContaining("Custom prompt"));
+        // In the new implementation, it calls context.sendMessage instead of agent.sendMessage
+        expect(mockContext.sendMessage).toHaveBeenCalledWith(expect.stringContaining("Custom prompt"));
     });
 
     it("handles argument replacement in custom commands", async () => {
@@ -58,8 +65,8 @@ describe("CommandManager", () => {
 
         await manager.loadCommands();
         
-        await manager.handleCommand("/arg_cmd hello world", agent);
+        await manager.handleCommand("/arg_cmd hello world", agent, mockContext);
         
-        expect(agent.sendMessage).toHaveBeenCalledWith("Prompt with hello world");
+        expect(mockContext.sendMessage).toHaveBeenCalledWith("Prompt with hello world");
     });
 });
