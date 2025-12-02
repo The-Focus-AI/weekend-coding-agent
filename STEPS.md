@@ -928,3 +928,29 @@ I've completed the request. I have:
 
 I am ready to hand off.
 ```
+
+---
+
+# Make a plan
+
+> Our goal is to write out specs/TUI_SPEC.md.  Look through the files in reports/ and then ask me clarifying questions on at a time until we have enough understanding to write out a spec file, and then we stop.  We want to design out the three panel plan outlines in the tui development research reports.  It should take up the fulls screen.  There should be a large top pane, and a smaller bottom pane.  The large pane on the top left, 2/3 of the screen, should contain mainly chat messages, either text message, or tool results summary.  The right pane should be navagiation, either showing previous sessions or changed, updated files.  The bottom entry area should be richly editable with emacs style key bindings, arrow keys, and the abaility to paste.  Additionall, we should make sure that we are showing the status bar in the same way as the cli, how many messages, the context size etc.  ask me clarifying questions one at a time, then write out the spec, and then stop.
+
+```markdown
+For the right navigation pane, should there be a specific key binding (e.g., `Tab` or a command) to toggle between the "Previous Sessions" list and the "Updated Files" view, or should they be displayed simultaneously (e.g., split vertically)?
+
+Also, for the "richly editable" bottom pane with Emacs bindings, are you looking for multi-line editing support (like `ink-text-area`) where keys like `Ctrl+P`/`Ctrl+N` move the cursor up/down lines, or are you referring to history navigation (previous/next sent messages) with those keys?
+```
+
+> i think tab should move between panes, and maybe right and left arrors should go between the files and the sessions?  In a way, the file set and the sessions are linked so its like seeing detail.  and for the rich area, i mean multiline suppport
+
+```markdown
+The specification has been written to `specs/TUI_SPEC.md`.
+
+This spec outlines:
+*   **The 3-Pane Layout:** Chat (Top Left, 2/3), Navigation (Right, 1/3), and Input (Bottom).
+*   **Interaction Model:** `Tab` cycles focus, `Left`/`Right` arrows toggle the Navigation tabs, and standard Emacs bindings are specified for the input area.
+*   **Component Architecture:** A React + Ink structure using Flexbox.
+*   **Status Bar:** Inclusion of message count, context size, and model info as requested.
+
+You can now proceed with implementation starting from this specification.
+```
