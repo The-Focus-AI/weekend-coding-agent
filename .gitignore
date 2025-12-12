@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+.test-sandbox/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+.sessions_log/
+.session_logs/
+.test_session_logs/
+
+old*.md
+
+# Test fixtures (generated)
+tests/test-fixtures/
+tests/edit-fixtures/
+
+plan.md
