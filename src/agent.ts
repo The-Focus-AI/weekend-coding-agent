@@ -26,47 +26,72 @@ export async function runTurn(
 
     const m = response.choices[0].message;
 
-    // Handle DeepSeek/OpenRouter reasoning details logging if present (optional side effect)
-    if (
-      m.reasoning_details &&
-      Array.isArray(m.reasoning_details) &&
-      m.reasoning_details.length > 0
-    ) {
-      // We log provided reasoning for visibility, though strictly this might belong in the CLI layer.
-      // For clean separation, we might attach it to the object and let the UI handle it,
-      // but here we just ensure it's preserved in the message.
+    // Handle DeepSeek/OpenRouter reasoning details logging
+    if (m.reasoning_details) {
+      if (
+        Array.isArray(m.reasoning_details) &&
+        m.reasoning_details.length > 0
+      ) {
+        console.log("\n[Reasoning]:", m.reasoning_details[0].text);
+      } else if (typeof m.reasoning_details === "string") {
+        console.log("\n[Reasoning]:", m.reasoning_details);
+      }
     }
 
-    if (m.tool_calls) {
-      const toolCall = m.tool_calls[0];
-      const args = JSON.parse(toolCall.function.arguments); // Assuming only one tool call for now as per bootstrap.ts
-
-      // Notify CLI (side effect - maybe cleaner to use a callback, but console.log is simple)
-      console.log(`$ ${args.command}`);
-
-      const result = await executeTool(
-        toolCall.function.name,
-        args,
-        toolExecutor,
-      );
-      console.log(result);
-
-      // Append Assistant request
+    if (m.tool_calls && m.tool_calls.length > 0) {
+      // Append Assistant request (contains ALL tool calls)
       currentMessages.push({
         role: "assistant",
         tool_calls: m.tool_calls,
         reasoning_details: m.reasoning_details,
       });
 
-      // Append Tool result
-      currentMessages.push({
-        role: "tool",
-        tool_call_id: toolCall.id,
-        content: result,
-        name: toolCall.function.name,
-      });
+      // Execute EACH tool call in parallel
+      const toolResults = await Promise.all(
+        m.tool_calls.map(async (toolCall: any) => {
+          const args = JSON.parse(toolCall.function.arguments);
 
-      // Loop continues to feed tool result back to LLM
+          // Notify CLI nicely
+          if (toolCall.function.name === "bash" && args.command) {
+            console.log(`$ ${args.command}`);
+          } else {
+            const argStr = JSON.stringify(args);
+            const displayArgs =
+              argStr.length > 100 ? `${argStr.substring(0, 97)}...` : argStr;
+            console.log(`[Tool: ${toolCall.function.name}] ${displayArgs}`);
+          }
+
+          let result = await executeTool(
+            toolCall.function.name,
+            args,
+            toolExecutor,
+          );
+
+          // Defensive Ensure result is string
+          if (typeof result !== "string") {
+            result = String(result);
+          }
+
+          // Truncate result for console log if too huge
+          const displayResult =
+            result.length > 1000
+              ? `${result.substring(0, 1000)}... [truncated]`
+              : result;
+          console.log(displayResult);
+
+          return {
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: result,
+            name: toolCall.function.name,
+          };
+        }),
+      );
+
+      // Append ALL Tool results
+      currentMessages.push(...(toolResults as any));
+
+      // Loop continues to feed tool results back to LLM
     } else {
       // Final response
       currentMessages.push({

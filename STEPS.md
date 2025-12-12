@@ -104,3 +104,50 @@ Lets record what we are doing, so we can use that information to do smarter thin
 
 > Add session-logging functionality to the system. Create a jsonl file in .session_logs/ with the name the current date, like YYYY-MM-DD-HH-MM.jsonl that contains an entry for each message.  We'll use these files to examine and tune the system, and manage subsessions and session compactions and stuff like that.
 
+---
+
+## Add custom tools
+
+> We need to add tools that are appropriate for navigating, editing, and varifying a code base.  Look through the existing tools.ts and look through the existing session_logs to see what could be improved, and suggest bunch of tools that we could build.  Ask me clarifying questions one at a time before we start to build anything.
+
+```markdown
+**Clarifying Question:**
+
+For the **`edit_file`** capability, relying on "exact string matching" for search-and-replace can be brittle if the model hallucinates a single whitespace character.
+
+**Would you prefer we implement a robust "search and replace" tool (requiring exact matches), or should we look into a "line-number based" editing tool (e.g., "replace lines 10-15 with X")?**
+```
+
+> is there a better diff style tool we could incorperate?
+
+```markdown
+For the **Execution/Verification** part (`run_command`), do you want to keep the raw `bash` tool (which effectively allows doing anything), or should we wrap specific common commands (like `git`, `check`, `test`) into their own typed tools to encourage safer behavior? (Keeping `bash` is most flexible but riskier).
+```
+
+> lets keep the bash tool for now, but make sure that it's used only as a last resort
+
+```markdown
+ I have implemented the suggested toolset for navigating, editing, and verifying the codebase.
+
+### Changes Summary
+1.  **Refactored `src/lib/tools.ts`**:
+    *   Added **Navigation Tools**: `list_files`, `read_file`, `search_files`.
+    *   Added **Editing Tools**:
+        *   `write_file`: For creating new files.
+        *   `replace_in_file`: A "smart diff" tool that replaces absolute blocks of text, ensuring uniqueness and safety (as requested).
+    *   Added **Verification Tools**: `run_check` (runs tests/lint), `git_diff`.
+    *   Kept `bash` as a fallback but discouraged its use in favor of structured tools.
+
+2.  **Updated `src/agent.ts`**:
+    *   Improved logging to display generic tool usage (e.g., `[Tool: read_file] path="..."`) instead of assuming every tool is a bash command.
+
+3.  **Updated `src/prompts/system.ts`**:
+    *   Revised the System Prompt to explicitly guide the agent on the "Explore -> Edit -> Verify" workflow using the new toolset.
+
+4.  **Verification**:
+    *   Ran `mise run check` to ensure all tests pass and code meets the style guidelines.
+
+You can now use the agent to safely navigate and edit the codebase
+```
+
+> Also, lets make sure that we can handle multiple parallel tool calls

@@ -58,12 +58,17 @@ async function main() {
   lastLogIndex = history.length;
 
   console.log("Agent started. Type 'exit' to quit.");
+  process.stdout.write("> ");
 
   // Main REPL loop
   for await (const line of console) {
     const input = line.trim();
     if (input === "exit") break;
-    if (!input) continue;
+
+    if (!input) {
+      process.stdout.write("> ");
+      continue;
+    }
 
     // Add user message
     history.push({ role: "user", content: input });
@@ -87,18 +92,14 @@ async function main() {
       // Print the last message (the final assistant response)
       const lastMsg = history[history.length - 1];
       if (lastMsg.role === "assistant" && lastMsg.content) {
-        if (
-          lastMsg.reasoning_details &&
-          Array.isArray(lastMsg.reasoning_details) &&
-          lastMsg.reasoning_details.length > 0
-        ) {
-          console.log("\nReasoning:", lastMsg.reasoning_details[0].text);
-        }
+        // Reasoning is now printed inside runTurn (streamed)
         console.log("\nAssistant:", lastMsg.content);
       }
     } catch (error) {
       console.error("An error occurred:", error);
     }
+
+    process.stdout.write("> ");
   }
 }
 
