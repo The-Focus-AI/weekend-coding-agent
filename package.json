@@ -3,6 +3,9 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
+    "lint": "biome check src tests",
+    "lint:fix": "biome check --write src tests",
+    "check": "bun test && biome check src tests",
     "test": "bun test",
     "dev": "bun run src/index.ts"
   },

@@ -81,3 +81,17 @@ And then
 
 Start up the new agent and see how it works.  If its not working, go back to the bootstrap.ts agent and use that to debug it!  Just copy in any errors you see and it should work to resolve.
 
+---
+
+## Cost and Context Awareness
+
+We need to keep track of which model we are running, and we need to see how much it costs, and how much these messages are costing it.
+
+> Look up the model stats on startup, including name and cost.
+> Log cost stats from the responses.
+> Calculate message length, context size, and current cost.
+> Display status after each message.
+
+And we can test it out while making sure that things are more tested!
+
+> update the prompt to always run linting and testing after each work unit, and make sure that everythign currently is tested

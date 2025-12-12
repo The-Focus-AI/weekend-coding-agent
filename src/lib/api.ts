@@ -2,7 +2,43 @@ import { TOOLS } from "./tools";
 import type { CompletionResponse, Message } from "./types";
 
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = process.env.AGENT_MODEL || "anthropic/claude-opus-4.5"; // Default from bootstrap.ts
+export const MODEL = process.env.AGENT_MODEL || "anthropic/claude-opus-4.5"; // Default from bootstrap.ts
+
+export interface ModelStats {
+  name: string;
+  cost: {
+    prompt: number;
+    completion: number;
+  };
+}
+
+let cachedStats: ModelStats | null = null;
+
+export async function fetchModelStats(): Promise<ModelStats | null> {
+  if (cachedStats) return cachedStats;
+
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/models");
+    const data = await response.json();
+    const models = (data as any).data;
+    const modelInfo = models.find((m: any) => m.id === MODEL);
+
+    if (modelInfo) {
+      cachedStats = {
+        name: modelInfo.name,
+        cost: {
+          prompt: parseFloat(modelInfo.pricing.prompt) || 0,
+          completion: parseFloat(modelInfo.pricing.completion) || 0,
+        },
+      };
+      return cachedStats;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch model stats:", error);
+    return null;
+  }
+}
 
 export async function callLLM(
   messages: Message[],
@@ -27,5 +63,17 @@ export async function callLLM(
     }),
   });
 
-  return response.json();
+  const data: CompletionResponse = await response.json();
+
+  if (data.usage && cachedStats) {
+    const { prompt_tokens, completion_tokens } = data.usage;
+    const cost =
+      prompt_tokens * cachedStats.cost.prompt +
+      completion_tokens * cachedStats.cost.completion;
+    console.log(
+      `\n[Usage] Input: ${prompt_tokens} | Output: ${completion_tokens} | Cost: $${cost.toFixed(6)}`,
+    );
+  }
+
+  return data;
 }

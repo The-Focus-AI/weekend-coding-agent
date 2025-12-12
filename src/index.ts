@@ -1,4 +1,5 @@
 import { runTurn } from "./agent";
+import { fetchModelStats, MODEL } from "./lib/api";
 import type { Message } from "./lib/types";
 import { SYSTEM_PROMPT } from "./prompts/system";
 
@@ -7,6 +8,18 @@ async function main() {
   if (!apiKey) {
     console.error("Error: OPENROUTER_API_KEY is not set.");
     process.exit(1);
+  }
+
+  // Fetch and display model stats
+  console.log("Fetching model stats for", MODEL, "...");
+  const stats = await fetchModelStats();
+  if (stats) {
+    console.log(`Model: ${stats.name}`);
+    console.log(
+      `Cost: $${stats.cost.prompt * 1000000} per 1M input tokens, $${stats.cost.completion * 1000000} per 1M output tokens`,
+    );
+  } else {
+    console.log(`Model: ${MODEL} (Stats not found)`);
   }
 
   // Initialize history with System Prompt

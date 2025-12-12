@@ -11,6 +11,11 @@ export interface CompletionResponse {
   choices: {
     message: Message;
   }[];
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
   error?: {
     message: string;
   };
