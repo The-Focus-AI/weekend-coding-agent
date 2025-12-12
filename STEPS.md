@@ -151,3 +151,13 @@ You can now use the agent to safely navigate and edit the codebase
 ```
 
 > Also, lets make sure that we can handle multiple parallel tool calls
+
+
+---
+
+## Cleanup and Refactoring
+
+> update the search tool in src so that it doesn't look throgh node_modules by default, only if specifically asked.  make sure that everything is property tested.  make sure that typechecking and lintig are run all of the time.  verify that we are showing reasoning specs, and verify that our usages totals are over the whole conversation
+
+> Print the usage right after each of the responses, not before.
+

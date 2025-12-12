@@ -65,15 +65,5 @@ export async function callLLM(
 
   const data: CompletionResponse = await response.json();
 
-  if (data.usage && cachedStats) {
-    const { prompt_tokens, completion_tokens } = data.usage;
-    const cost =
-      prompt_tokens * cachedStats.cost.prompt +
-      completion_tokens * cachedStats.cost.completion;
-    console.log(
-      `\n[Usage] Input: ${prompt_tokens} | Output: ${completion_tokens} | Cost: $${cost.toFixed(6)}`,
-    );
-  }
-
   return data;
 }

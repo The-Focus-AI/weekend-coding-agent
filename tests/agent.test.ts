@@ -7,14 +7,13 @@ describe("Agent Logic", () => {
     const mockApi = mock(() =>
       Promise.resolve({
         choices: [{ message: { role: "assistant", content: "Response" } }],
+        usage: { prompt_tokens: 10, completion_tokens: 5 },
       }),
     );
-    // Override local implementation if possible, or dependency injection.
-    // Since we are using ES modules, dependency injection is cleaner.
 
     const messages: any[] = [{ role: "user", content: "Hello" }];
 
-    const updatedMessages = await runTurn(
+    const { messages: updatedMessages, usage } = await runTurn(
       messages,
       mockApi as any,
       null as any,
@@ -23,6 +22,8 @@ describe("Agent Logic", () => {
     expect(updatedMessages.length).toBe(2);
     expect(updatedMessages[1].role).toBe("assistant");
     expect(updatedMessages[1].content).toBe("Response");
+    expect(usage).toBeDefined();
+    expect(usage.prompt_tokens).toBe(10);
   });
 
   test("should handle tool calls", async () => {
@@ -51,10 +52,12 @@ describe("Agent Logic", () => {
               },
             },
           ],
+          usage: { prompt_tokens: 10, completion_tokens: 5 },
         };
       }
       return {
         choices: [{ message: { role: "assistant", content: "Done" } }],
+        usage: { prompt_tokens: 20, completion_tokens: 5 },
       };
     });
 
@@ -63,7 +66,7 @@ describe("Agent Logic", () => {
     const messages: any[] = [{ role: "user", content: "Run echo" }];
 
     // We pass the mock functions into runTurn
-    const updatedMessages = await runTurn(
+    const { messages: updatedMessages, usage } = await runTurn(
       messages,
       mockApi as any,
       mockToolExecutor,
@@ -79,5 +82,9 @@ describe("Agent Logic", () => {
     expect(updatedMessages[2].role).toBe("tool");
     expect(updatedMessages[2].content).toBe("hi");
     expect(updatedMessages[3].content).toBe("Done");
+
+    // Usage should be accumulated: 10 + 20 prompt, 5 + 5 completion
+    expect(usage.prompt_tokens).toBe(30);
+    expect(usage.completion_tokens).toBe(10);
   });
 });

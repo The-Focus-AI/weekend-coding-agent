@@ -53,6 +53,8 @@ async function main() {
   const history: Message[] = [{ role: "system", content: SYSTEM_PROMPT }];
   let lastLogIndex = 0;
 
+  const sessionUsage = { prompt_tokens: 0, completion_tokens: 0, cost: 0 };
+
   // Log initial system message
   logMessages(history.slice(lastLogIndex));
   lastLogIndex = history.length;
@@ -79,7 +81,19 @@ async function main() {
 
     try {
       // Run the agent turn (handles tool loops internally)
-      const updatedHistory = await runTurn(history);
+      const { messages: updatedHistory, usage } = await runTurn(history);
+
+      // Accumulate usage
+      sessionUsage.prompt_tokens += usage.prompt_tokens;
+      sessionUsage.completion_tokens += usage.completion_tokens;
+
+      let turnCost = 0;
+      if (stats) {
+        turnCost =
+          usage.prompt_tokens * stats.cost.prompt +
+          usage.completion_tokens * stats.cost.completion;
+        sessionUsage.cost += turnCost;
+      }
 
       // Update our local history with the new messages (tool calls, tool results, final answer)
       history.length = 0;
@@ -95,6 +109,13 @@ async function main() {
         // Reasoning is now printed inside runTurn (streamed)
         console.log("\nAssistant:", lastMsg.content);
       }
+
+      console.log(
+        `\n[Turn Usage] Input: ${usage.prompt_tokens} | Output: ${usage.completion_tokens} | Cost: $${turnCost.toFixed(6)}`,
+      );
+      console.log(
+        `[Session Total] Input: ${sessionUsage.prompt_tokens} | Output: ${sessionUsage.completion_tokens} | Cost: $${sessionUsage.cost.toFixed(6)}`,
+      );
     } catch (error) {
       console.error("An error occurred:", error);
     }

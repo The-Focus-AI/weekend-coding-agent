@@ -13,5 +13,8 @@
     "@types/bun": "latest",
     "@biomejs/biome": "latest",
     "typescript": "latest"
+  },
+  "dependencies": {
+    "biome": "^0.3.3"
   }
 }

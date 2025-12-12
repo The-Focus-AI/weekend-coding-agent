@@ -9,15 +9,32 @@ import type { Message } from "./lib/types";
 // Type for the API caller to allow injection
 type ApiCaller = (messages: Message[]) => Promise<any>;
 
+interface TurnResult {
+  messages: Message[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+  };
+}
+
 export async function runTurn(
   history: Message[],
   apiCaller: ApiCaller = callLLM,
   toolExecutor: CommandExecutor = defaultBashExecutor,
-): Promise<Message[]> {
+): Promise<TurnResult> {
   const currentMessages = [...history]; // copy
+  const usage = {
+    prompt_tokens: 0,
+    completion_tokens: 0,
+  };
 
   while (true) {
     const response = await apiCaller(currentMessages);
+
+    if (response.usage) {
+      usage.prompt_tokens += response.usage.prompt_tokens;
+      usage.completion_tokens += response.usage.completion_tokens;
+    }
 
     if (response.error) {
       console.error("API Error:", response.error.message);
@@ -103,5 +120,5 @@ export async function runTurn(
     }
   }
 
-  return currentMessages;
+  return { messages: currentMessages, usage };
 }

@@ -2,8 +2,6 @@
 bun = "latest"
 
 [tasks]
-dev = "bun run dev"
-test = "bun test"
-lint = "biome check src tests"
-"lint:fix" = "biome check --write src tests"
+lint = "bun run lint"
 check = "bun run check"
+test = "bun run test"
