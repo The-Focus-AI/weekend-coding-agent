@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { runTurn } from "./agent";
 import { fetchModelStats, MODEL } from "./lib/api";
 import type { Message } from "./lib/types";
@@ -8,6 +10,31 @@ async function main() {
   if (!apiKey) {
     console.error("Error: OPENROUTER_API_KEY is not set.");
     process.exit(1);
+  }
+
+  // Session Logging Setup
+  const logDir = path.join(process.cwd(), ".session_logs");
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const logFileName = `${year}-${month}-${day}-${hours}-${minutes}.jsonl`;
+  const logFile = path.join(logDir, logFileName);
+
+  function logMessages(messages: Message[]) {
+    try {
+      for (const msg of messages) {
+        fs.appendFileSync(logFile, `${JSON.stringify(msg)}\n`);
+      }
+    } catch (err) {
+      console.error("Failed to write to session log:", err);
+    }
   }
 
   // Fetch and display model stats
@@ -24,6 +51,11 @@ async function main() {
 
   // Initialize history with System Prompt
   const history: Message[] = [{ role: "system", content: SYSTEM_PROMPT }];
+  let lastLogIndex = 0;
+
+  // Log initial system message
+  logMessages(history.slice(lastLogIndex));
+  lastLogIndex = history.length;
 
   console.log("Agent started. Type 'exit' to quit.");
 
@@ -36,14 +68,21 @@ async function main() {
     // Add user message
     history.push({ role: "user", content: input });
 
+    // Log user message
+    logMessages(history.slice(lastLogIndex));
+    lastLogIndex = history.length;
+
     try {
       // Run the agent turn (handles tool loops internally)
       const updatedHistory = await runTurn(history);
 
       // Update our local history with the new messages (tool calls, tool results, final answer)
-      // runTurn returns the *entire* array including input history.
       history.length = 0;
       history.push(...updatedHistory);
+
+      // Log new messages from assistant/tools
+      logMessages(history.slice(lastLogIndex));
+      lastLogIndex = history.length;
 
       // Print the last message (the final assistant response)
       const lastMsg = history[history.length - 1];

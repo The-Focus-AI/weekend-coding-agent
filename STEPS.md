@@ -95,3 +95,12 @@ We need to keep track of which model we are running, and we need to see how much
 And we can test it out while making sure that things are more tested!
 
 > update the prompt to always run linting and testing after each work unit, and make sure that everythign currently is tested
+
+---
+
+## Session logging
+
+Lets record what we are doing, so we can use that information to do smarter things.
+
+> Add session-logging functionality to the system. Create a jsonl file in .session_logs/ with the name the current date, like YYYY-MM-DD-HH-MM.jsonl that contains an entry for each message.  We'll use these files to examine and tune the system, and manage subsessions and session compactions and stuff like that.
+

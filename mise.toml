@@ -2,16 +2,8 @@
 bun = "latest"
 
 [tasks]
-# Development
-dev = "bun run src/index.ts"
+dev = "bun run dev"
 test = "bun test"
-
-# Build & Production
-build = "bun build ./src/index.ts --outdir ./dist --target bun"
-start = "bun run dist/index.js"
-
-# Code Quality
-lint = "bun run biome check src tests"
-"lint:fix" = "bun run biome check --write src tests"
-format = "bun run biome format --write src tests"
-check = "tsc --noEmit"
+lint = "biome check src tests"
+"lint:fix" = "biome check --write src tests"
+check = "bun run check"
