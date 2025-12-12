@@ -68,3 +68,16 @@ The files in the current directory are:
 Looks good!
 
 ---
+
+## Project Scaffolding and Lint/Test
+
+Lets start it up and flesh out our first agent.  We want take the bootstrap code and expand it into a more modular structure, we want to make sure that we have testing and linting to make sure that the code works, and we know that we are going to want to iterate on the system prompt.
+
+> Take bootstrap.ts and convert it into a cleanly structured typescript project.  Use mise, bun and biome to control the building, running, testing, and linting of the project.  Split out the prompt so that we can iterate on it going forward.  Write tests for everything first, and make sure everythign passes.
+
+And then
+
+> run the linters and the tests to make sure everything passes.  make sure you have a test for the bash tool, make sure it can list all of the files in the directory
+
+Start up the new agent and see how it works.  If its not working, go back to the bootstrap.ts agent and use that to debug it!  Just copy in any errors you see and it should work to resolve.
+

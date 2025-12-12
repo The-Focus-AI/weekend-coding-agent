@@ -1,0 +1,14 @@
+{
+  "name": "bun-agent-bootstrap",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "dev": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@biomejs/biome": "latest",
+    "typescript": "latest"
+  }
+}
