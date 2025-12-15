@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import { executeTool } from "../src/lib/tools";
+import { defaultBashExecutor, executeTool } from "../src/tools/index";
 
 // Mock the Bash executor
 const mockExecutor = mock((cmd: string) => Promise.resolve(`executed: ${cmd}`));
@@ -20,14 +20,19 @@ describe("Tool Execution", () => {
 
   test("should throw error for unknown tool", async () => {
     expect(async () => {
-      await executeTool("unknown", { some: "arg" });
+      // @ts-expect-error
+      await executeTool("unknown", { some: "arg" }, mockExecutor);
     }).toThrow("Unknown tool");
   });
 
   test("should list files in directory using default executor (integration)", async () => {
     // This uses the REAL defaultBashExecutor (no mock)
     // We run 'ls -F' and expect to see known project files.
-    const result = await executeTool("bash", { command: "ls -F" });
+    const result = await executeTool(
+      "bash",
+      { command: "ls -F" },
+      defaultBashExecutor,
+    );
 
     // Debug output if needed
     // console.log("ls output:", result);

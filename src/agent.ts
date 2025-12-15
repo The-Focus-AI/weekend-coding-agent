@@ -1,13 +1,11 @@
 import { callLLM } from "./lib/api";
-import {
-  type CommandExecutor,
-  defaultBashExecutor,
-  executeTool,
-} from "./lib/tools";
 import type { Message } from "./lib/types";
+import { executeTool, TOOLS } from "./tools/index";
+import { defaultBashExecutor } from "./tools/system";
+import type { CommandExecutor } from "./tools/types";
 
 // Type for the API caller to allow injection
-type ApiCaller = (messages: Message[]) => Promise<any>;
+type ApiCaller = (messages: Message[], tools?: any[]) => Promise<any>;
 
 interface TurnResult {
   messages: Message[];
@@ -21,6 +19,7 @@ export async function runTurn(
   history: Message[],
   apiCaller: ApiCaller = callLLM,
   toolExecutor: CommandExecutor = defaultBashExecutor,
+  tools: any[] = TOOLS,
 ): Promise<TurnResult> {
   const currentMessages = [...history]; // copy
   const usage = {
@@ -29,7 +28,7 @@ export async function runTurn(
   };
 
   while (true) {
-    const response = await apiCaller(currentMessages);
+    const response = await apiCaller(currentMessages, tools);
 
     if (response.usage) {
       usage.prompt_tokens += response.usage.prompt_tokens;

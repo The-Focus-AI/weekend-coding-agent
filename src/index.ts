@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { runTurn } from "./agent";
 import { fetchModelStats, MODEL } from "./lib/api";
 import type { Message } from "./lib/types";
-import { SYSTEM_PROMPT } from "./prompts/system";
+import { getPrompt } from "./prompts/index";
 
 async function main() {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -49,8 +49,20 @@ async function main() {
     console.log(`Model: ${MODEL} (Stats not found)`);
   }
 
+  // Parse command line args for prompt selection
+  const args = process.argv.slice(2);
+  const promptArg = args.find((arg) => arg.startsWith("--prompt="));
+  const promptName = promptArg ? promptArg.split("=")[1] : "default";
+
+  const selectedPrompt = getPrompt(promptName);
+  console.log(
+    `Using prompt: ${selectedPrompt.name} - ${selectedPrompt.description}`,
+  );
+
   // Initialize history with System Prompt
-  const history: Message[] = [{ role: "system", content: SYSTEM_PROMPT }];
+  const history: Message[] = [
+    { role: "system", content: selectedPrompt.systemPrompt },
+  ];
   let lastLogIndex = 0;
 
   const sessionUsage = { prompt_tokens: 0, completion_tokens: 0, cost: 0 };
@@ -81,7 +93,12 @@ async function main() {
 
     try {
       // Run the agent turn (handles tool loops internally)
-      const { messages: updatedHistory, usage } = await runTurn(history);
+      const { messages: updatedHistory, usage } = await runTurn(
+        history,
+        undefined,
+        undefined,
+        selectedPrompt.tools,
+      );
 
       // Accumulate usage
       sessionUsage.prompt_tokens += usage.prompt_tokens;

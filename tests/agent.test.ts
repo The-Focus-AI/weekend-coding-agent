@@ -1,7 +1,16 @@
-import { describe, expect, mock, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
 import { runTurn } from "../src/agent";
 
 describe("Agent Logic", () => {
+  // Suppress console.log specific to this test file to avoid "echo hi" noise
+  const originalLog = console.log;
+  beforeAll(() => {
+    console.log = mock(() => {});
+  });
+  afterAll(() => {
+    console.log = originalLog;
+  });
+
   test("should handle simple response without tools", async () => {
     // Mock API to return simple message
     const mockApi = mock(() =>

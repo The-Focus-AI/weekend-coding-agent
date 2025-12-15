@@ -4,7 +4,7 @@ import {
   replaceInFile,
   writeFileContent,
 } from "./files";
-import { gitCommit, gitDiff } from "./git";
+import { gitDiff } from "./git";
 import { searchFiles } from "./search";
 import { defaultBashExecutor, runBash } from "./system";
 import type { CommandExecutor } from "./types";
@@ -50,6 +50,14 @@ export const TOOLS = [
         type: "object",
         properties: {
           path: { type: "string", description: "Path to file" },
+          startLine: {
+            type: "number",
+            description: "Line number to start reading from (default: 1)",
+          },
+          limit: {
+            type: "number",
+            description: "Number of lines to read (default: 500)",
+          },
         },
         required: ["path"],
       },
@@ -91,7 +99,7 @@ export const TOOLS = [
     type: "function",
     function: {
       name: "search_files",
-      description: "Search for a string pattern in files (using grep)",
+      description: "Search for a string pattern in files (using ripgrep)",
       parameters: {
         type: "object",
         properties: {
@@ -134,20 +142,6 @@ export const TOOLS = [
       },
     },
   },
-  {
-    type: "function",
-    function: {
-      name: "git_commit",
-      description: "Stage all changes and commit with a message",
-      parameters: {
-        type: "object",
-        properties: {
-          message: { type: "string", description: "Commit message" },
-        },
-        required: ["message"],
-      },
-    },
-  },
 ];
 
 export async function executeTool(
@@ -161,7 +155,7 @@ export async function executeTool(
     case "list_files":
       return listFiles(args.path);
     case "read_file":
-      return readFileContent(args.path);
+      return readFileContent(args.path, args.startLine, args.limit);
     case "write_file":
       return writeFileContent(args.path, args.content);
     case "replace_in_file":
@@ -172,8 +166,6 @@ export async function executeTool(
       return runBash("mise run check", bashExecutor);
     case "git_diff":
       return gitDiff(bashExecutor);
-    case "git_commit":
-      return gitCommit(args.message, bashExecutor);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

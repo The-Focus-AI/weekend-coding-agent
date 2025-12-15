@@ -161,3 +161,20 @@ You can now use the agent to safely navigate and edit the codebase
 
 > Print the usage right after each of the responses, not before.
 
+---
+
+## Prompting
+
+The ability for the main agent to call an subagent is a great way to manage context. 
+
+First lets clean up some tool things so keep things under control:
+
+
+> look through the tools implementations and make sure that it's clean, and make sure that we are using ripgrep for searching
+
+> add a limit to the size of the response for search_files to make sure that it doesn't return more than 50 lines.  also add a 500 line limit to read_file and add some offset parameters to it.   remove git commit command also
+
+Now that's done, lets add a better prompt system:
+
+> Clean up the prompt system.  We want to support multiple prompts, for example code-explorer, or feature-planner, or tech-researcher, that will have access to different tools and write out different results.  Each prompt should have a description describing what it's approprate, and a list of tools that is has access to.  We want to add a sub-prompt tool that will create a new agent with a detailed message, and then the agent can return the result or ask for more equestions
+

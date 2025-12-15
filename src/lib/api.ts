@@ -1,4 +1,4 @@
-import { TOOLS } from "./tools";
+import { TOOLS } from "../tools/index";
 import type { CompletionResponse, Message } from "./types";
 
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -42,6 +42,7 @@ export async function fetchModelStats(): Promise<ModelStats | null> {
 
 export async function callLLM(
   messages: Message[],
+  tools: any[] = TOOLS,
 ): Promise<CompletionResponse> {
   const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -57,7 +58,7 @@ export async function callLLM(
     body: JSON.stringify({
       model: MODEL,
       messages: messages,
-      tools: TOOLS,
+      tools: tools,
       reasoning: { max_tokens: 5000 },
       include_reasoning: true,
     }),

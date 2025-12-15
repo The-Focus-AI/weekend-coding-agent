@@ -23,9 +23,28 @@ export async function listFiles(dirPath: string = "."): Promise<string> {
   }
 }
 
-export async function readFileContent(filePath: string): Promise<string> {
+export async function readFileContent(
+  filePath: string,
+  startLine: number = 1,
+  limit: number = 500,
+): Promise<string> {
   try {
-    return await readFile(filePath, "utf-8");
+    const content = await readFile(filePath, "utf-8");
+    const lines = content.split("\n");
+
+    const start = Math.max(0, startLine - 1);
+    const safeLimit = Math.min(limit, 500); // Enforce 500 line limit
+    const end = Math.min(lines.length, start + safeLimit);
+
+    const selectedLines = lines.slice(start, end);
+    let result = selectedLines.join("\n");
+
+    // If not showing the entire file, append a message
+    if (lines.length > end - start) {
+      result += `\n\n(Showing lines ${start + 1}-${end} of ${lines.length}. Use startLine and limit to see more.)`;
+    }
+
+    return result;
   } catch (e: any) {
     return `Error reading file: ${e.message}`;
   }

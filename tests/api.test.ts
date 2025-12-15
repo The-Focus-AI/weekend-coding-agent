@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from "bun:test";
 import { callLLM } from "../src/lib/api";
-import { TOOLS } from "../src/lib/tools";
+import { TOOLS } from "../src/tools/index";
 
 // Mock global fetch
 const originalFetch = global.fetch;
