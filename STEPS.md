@@ -178,3 +178,15 @@ Now that's done, lets add a better prompt system:
 
 > Clean up the prompt system.  We want to support multiple prompts, for example code-explorer, or feature-planner, or tech-researcher, that will have access to different tools and write out different results.  Each prompt should have a description describing what it's approprate, and a list of tools that is has access to.  We want to add a sub-prompt tool that will create a new agent with a detailed message, and then the agent can return the result or ask for more equestions
 
+---
+
+## Subagents: code-map
+
+Lets write a prompt that will help map out what is in the code base.
+
+> Create a code explorer agent that is in the prompt directory.  You will write out a very detailed prompt that can be run over and over again.  The prompt looks through the entire codebase, and documents it.  The format should be structured and optimized for LLMs to read it to focus on adding and refactoring code to keep it clean as possible.  It should be in file called docs/YYYY-MM-DD-code-map.md with prompt markdown frontmatter.  There should be a 2 sentence summary, then it should explain the high level architecture, then each of the main modules.  If there are any pressing security or other code quality issues -- such as poor test converage -- then those should be documetned by priority.  After that, if there's a database, document the datamodel.  If it's a typed language, document the types and where they are defined.  After that, it should go through each source and test file specifiying what methods (with type signatures) are in each file, and how they files are interlated.  Be sure that this prompt can easily be run as a subagent.  Ask me clarifying questions one at a time.
+
+> Integrate the prompt system with the subagent system, and make sure that the list of prompts, subagents, and tools is dynamically specified for each prompt.  Also, we don't need code-explorer and code-map as a spereate thing.
+
+> examine the log system and make sure that entries are logged immediately after response, and that we are corrctly tracking how subagent logs map to the parent agent
+

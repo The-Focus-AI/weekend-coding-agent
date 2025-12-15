@@ -1,7 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as readline from "node:readline";
 import { runTurn } from "./agent";
 import { fetchModelStats, MODEL } from "./lib/api";
+import { SessionLogger } from "./lib/logger";
 import type { Message } from "./lib/types";
 import { getPrompt } from "./prompts/index";
 
@@ -27,15 +29,7 @@ async function main() {
   const logFileName = `${year}-${month}-${day}-${hours}-${minutes}.jsonl`;
   const logFile = path.join(logDir, logFileName);
 
-  function logMessages(messages: Message[]) {
-    try {
-      for (const msg of messages) {
-        fs.appendFileSync(logFile, `${JSON.stringify(msg)}\n`);
-      }
-    } catch (err) {
-      console.error("Failed to write to session log:", err);
-    }
-  }
+  const logger = new SessionLogger(logFile);
 
   // Fetch and display model stats
   console.log("Fetching model stats for", MODEL, "...");
@@ -63,33 +57,37 @@ async function main() {
   const history: Message[] = [
     { role: "system", content: selectedPrompt.systemPrompt },
   ];
-  let lastLogIndex = 0;
 
   const sessionUsage = { prompt_tokens: 0, completion_tokens: 0, cost: 0 };
 
   // Log initial system message
-  logMessages(history.slice(lastLogIndex));
-  lastLogIndex = history.length;
+  logger.log(history[0]);
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: "> ",
+  });
 
   console.log("Agent started. Type 'exit' to quit.");
-  process.stdout.write("> ");
+  rl.prompt();
 
   // Main REPL loop
-  for await (const line of console) {
+  for await (const line of rl) {
     const input = line.trim();
     if (input === "exit") break;
 
     if (!input) {
-      process.stdout.write("> ");
+      rl.prompt();
       continue;
     }
 
     // Add user message
-    history.push({ role: "user", content: input });
+    const userMsg: Message = { role: "user", content: input };
+    history.push(userMsg);
 
     // Log user message
-    logMessages(history.slice(lastLogIndex));
-    lastLogIndex = history.length;
+    logger.log(userMsg);
 
     try {
       // Run the agent turn (handles tool loops internally)
@@ -98,6 +96,7 @@ async function main() {
         undefined,
         undefined,
         selectedPrompt.tools,
+        logger, // Pass the logger!
       );
 
       // Accumulate usage
@@ -116,10 +115,6 @@ async function main() {
       history.length = 0;
       history.push(...updatedHistory);
 
-      // Log new messages from assistant/tools
-      logMessages(history.slice(lastLogIndex));
-      lastLogIndex = history.length;
-
       // Print the last message (the final assistant response)
       const lastMsg = history[history.length - 1];
       if (lastMsg.role === "assistant" && lastMsg.content) {
@@ -137,7 +132,7 @@ async function main() {
       console.error("An error occurred:", error);
     }
 
-    process.stdout.write("> ");
+    rl.prompt();
   }
 }
 

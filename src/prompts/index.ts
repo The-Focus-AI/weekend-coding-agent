@@ -1,5 +1,6 @@
-import { TOOLS } from "../lib/tools";
-import { SYSTEM_PROMPT } from "./system";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { TOOLS } from "../tools";
 
 export interface Prompt {
   name: string;
@@ -8,60 +9,102 @@ export interface Prompt {
   tools: any[];
 }
 
-const allTools = TOOLS;
-const readOnlyTools = TOOLS.filter((t) =>
-  ["list_files", "read_file", "search_files"].includes(t.function.name),
-);
+function parseFrontMatter(content: string): {
+  metadata: Record<string, any>;
+  body: string;
+} {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    return { metadata: {}, body: content };
+  }
 
-// Define specialized system prompts
-const EXPLORER_PROMPT = `You are a code explorer. Your goal is to understand the codebase and answer questions about it.
-You have access to tools to navigate and read code.
-You cannot modify files or run commands.
-`;
+  const metadataRaw = match[1];
+  const body = match[2];
+  const metadata: Record<string, any> = {};
 
-const PLANNER_PROMPT = `You are a feature planner. Your goal is to analyze the codebase and create a detailed plan for implementing a new feature.
-You should explore the code to understand the context and then propose a plan.
-You can write the plan to a file (e.g., plan.md) but you should not modify code files.
-`;
+  for (const line of metadataRaw.split("\n")) {
+    const [key, ...values] = line.split(":");
+    if (key && values.length > 0) {
+      let value = values.join(":").trim();
+      // Handle simple array parsing [a, b, c]
+      if (value.startsWith("[") && value.endsWith("]")) {
+        value = value
+          .slice(1, -1)
+          .split(",")
+          .map((v) => v.trim());
+      }
+      metadata[key.trim()] = value;
+    }
+  }
 
-const RESEARCHER_PROMPT = `You are a tech researcher. Your goal is to research technologies or patterns used in the codebase.
-You have access to read-only tools.
-`;
+  return { metadata, body };
+}
 
-export const PROMPTS: Record<string, Prompt> = {
-  default: {
-    name: "default",
-    description: "The default full-featured agent.",
-    systemPrompt: SYSTEM_PROMPT,
-    tools: allTools,
-  },
-  "code-explorer": {
-    name: "code-explorer",
-    description: "A read-only agent for exploring the codebase.",
-    systemPrompt: EXPLORER_PROMPT,
-    tools: readOnlyTools,
-  },
-  "feature-planner": {
-    name: "feature-planner",
-    description: "An agent for planning features.",
-    systemPrompt: PLANNER_PROMPT,
-    tools: TOOLS.filter((t) =>
-      [
-        "list_files",
-        "read_file",
-        "search_files",
-        "write_file", // Allowed to write plans
-      ].includes(t.function.name),
-    ),
-  },
-  "tech-researcher": {
-    name: "tech-researcher",
-    description: "An agent for technical research.",
-    systemPrompt: RESEARCHER_PROMPT,
-    tools: readOnlyTools,
-  },
-};
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function loadPrompts(): Record<string, Prompt> {
+  const promptsDir = __dirname;
+  const prompts: Record<string, Prompt> = {};
+  const files = fs.readdirSync(promptsDir);
+
+  for (const file of files) {
+    if (path.extname(file) === ".md") {
+      const content = fs.readFileSync(path.join(promptsDir, file), "utf-8");
+      const { metadata, body } = parseFrontMatter(content);
+
+      if (!metadata.name) continue;
+
+      const toolNames = (metadata.tools as string[]) || [];
+      const subagentNames = (metadata.subagents as string[]) || [];
+
+      const promptTools = TOOLS.filter((t) =>
+        toolNames.includes(t.function.name),
+      );
+
+      if (subagentNames.length > 0) {
+        promptTools.push({
+          type: "function",
+          function: {
+            name: "run_agent",
+            description: "Delegate a task to a specialized subagent",
+            parameters: {
+              type: "object",
+              properties: {
+                agentName: {
+                  type: "string",
+                  enum: subagentNames,
+                  description: "The name of the subagent to run",
+                },
+                task: {
+                  type: "string",
+                  description: "The task description for the subagent",
+                },
+              },
+              required: ["agentName", "task"],
+            },
+          },
+        });
+      }
+
+      prompts[metadata.name] = {
+        name: metadata.name,
+        description: metadata.description || "",
+        systemPrompt: body.trim(),
+        tools: promptTools,
+      };
+    }
+  }
+  return prompts;
+}
+
+// Cache prompts
+let PROMPTS_CACHE: Record<string, Prompt> | null = null;
 
 export function getPrompt(name: string): Prompt {
-  return PROMPTS[name] || PROMPTS.default;
+  if (!PROMPTS_CACHE) {
+    PROMPTS_CACHE = loadPrompts();
+  }
+  return PROMPTS_CACHE[name] || PROMPTS_CACHE.default;
 }

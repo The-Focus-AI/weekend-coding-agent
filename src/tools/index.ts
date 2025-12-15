@@ -7,7 +7,7 @@ import {
 import { gitDiff } from "./git";
 import { searchFiles } from "./search";
 import { defaultBashExecutor, runBash } from "./system";
-import type { CommandExecutor } from "./types";
+import type { AgentRunner, CommandExecutor } from "./types";
 
 export { defaultBashExecutor } from "./system";
 export type { CommandExecutor } from "./types";
@@ -148,6 +148,7 @@ export async function executeTool(
   name: string,
   args: any,
   bashExecutor: CommandExecutor = defaultBashExecutor,
+  agentRunner?: AgentRunner,
 ): Promise<string> {
   switch (name) {
     case "bash":
@@ -166,6 +167,9 @@ export async function executeTool(
       return runBash("mise run check", bashExecutor);
     case "git_diff":
       return gitDiff(bashExecutor);
+    case "run_agent":
+      if (!agentRunner) throw new Error("Agent runner not provided");
+      return agentRunner(args.agentName, args.task);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

@@ -1,8 +1,10 @@
 import { callLLM } from "./lib/api";
+import type { Logger } from "./lib/logger";
 import type { Message } from "./lib/types";
+import { getPrompt } from "./prompts/index";
 import { executeTool, TOOLS } from "./tools/index";
 import { defaultBashExecutor } from "./tools/system";
-import type { CommandExecutor } from "./tools/types";
+import type { AgentRunner, CommandExecutor } from "./tools/types";
 
 // Type for the API caller to allow injection
 type ApiCaller = (messages: Message[], tools?: any[]) => Promise<any>;
@@ -20,11 +22,50 @@ export async function runTurn(
   apiCaller: ApiCaller = callLLM,
   toolExecutor: CommandExecutor = defaultBashExecutor,
   tools: any[] = TOOLS,
+  logger?: Logger,
 ): Promise<TurnResult> {
   const currentMessages = [...history]; // copy
   const usage = {
     prompt_tokens: 0,
     completion_tokens: 0,
+  };
+
+  const agentRunner: AgentRunner = async (agentName: string, task: string) => {
+    console.log(`\n--- [Subagent Start] ${agentName} ---`);
+    console.log(`Task: ${task}\n`);
+
+    const prompt = getPrompt(agentName);
+    const subQuery: Message[] = [
+      { role: "system", content: prompt.systemPrompt },
+      { role: "user", content: task },
+    ];
+
+    const subLogger = logger ? logger.child(agentName) : undefined;
+    if (subLogger) {
+      subQuery.forEach((m) => {
+        subLogger.log(m);
+      });
+    }
+
+    try {
+      const { messages } = await runTurn(
+        subQuery,
+        apiCaller,
+        toolExecutor,
+        prompt.tools,
+        subLogger,
+      );
+      const lastMsg = messages[messages.length - 1];
+      console.log(`\n--- [Subagent End] ${agentName} ---`);
+
+      if (lastMsg.role === "assistant" && lastMsg.content) {
+        return lastMsg.content;
+      }
+      return "Subagent completed without specific output.";
+    } catch (e: any) {
+      console.error(`Subagent ${agentName} failed:`, e);
+      return `Error executing subagent ${agentName}: ${e.message}`;
+    }
   };
 
   while (true) {
@@ -56,11 +97,13 @@ export async function runTurn(
 
     if (m.tool_calls && m.tool_calls.length > 0) {
       // Append Assistant request (contains ALL tool calls)
-      currentMessages.push({
+      const assistantMsg: Message = {
         role: "assistant",
         tool_calls: m.tool_calls,
         reasoning_details: m.reasoning_details,
-      });
+      };
+      currentMessages.push(assistantMsg);
+      if (logger) logger.log(assistantMsg);
 
       // Execute EACH tool call in parallel
       const toolResults = await Promise.all(
@@ -81,6 +124,7 @@ export async function runTurn(
             toolCall.function.name,
             args,
             toolExecutor,
+            agentRunner,
           );
 
           // Defensive Ensure result is string
@@ -100,21 +144,28 @@ export async function runTurn(
             tool_call_id: toolCall.id,
             content: result,
             name: toolCall.function.name,
-          };
+          } as Message;
         }),
       );
 
       // Append ALL Tool results
-      currentMessages.push(...(toolResults as any));
+      currentMessages.push(...toolResults);
+      if (logger) {
+        toolResults.forEach((msg) => {
+          logger.log(msg);
+        });
+      }
 
       // Loop continues to feed tool results back to LLM
     } else {
       // Final response
-      currentMessages.push({
+      const assistantMsg: Message = {
         role: "assistant",
         content: m.content,
         reasoning_details: m.reasoning_details,
-      });
+      };
+      currentMessages.push(assistantMsg);
+      if (logger) logger.log(assistantMsg);
       break;
     }
   }
