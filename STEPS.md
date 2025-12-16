@@ -190,3 +190,23 @@ Lets write a prompt that will help map out what is in the code base.
 
 > examine the log system and make sure that entries are logged immediately after response, and that we are corrctly tracking how subagent logs map to the parent agent
 
+---
+
+## Tools: Searching
+
+> Add a tool that uses markify or similar to download a url and convert it to markdown
+
+If that seems good, lets add a better search
+
+> Add tavily search as a tool
+
+Then in a new instance:
+
+> use the tavily search engine tool to look up best practices on how to use tavily, and then updte the tavily.ts search tool
+
+Now we can give it a go:
+
+And finally lets update the tech report agent.
+
+
+

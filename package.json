@@ -10,11 +10,13 @@
     "dev": "bun run src/index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "@biomejs/biome": "latest",
+    "@types/bun": "latest",
+    "@types/turndown": "^5.0.6",
     "typescript": "latest"
   },
   "dependencies": {
-    "biome": "^0.3.3"
+    "biome": "^0.3.3",
+    "turndown": "^7.2.2"
   }
 }

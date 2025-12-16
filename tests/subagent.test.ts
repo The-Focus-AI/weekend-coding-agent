@@ -1,21 +1,8 @@
-import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { runTurn } from "../src/agent";
 import { TOOLS } from "../src/tools";
 
 describe("Subagent Integration", () => {
-  const originalLog = console.log;
-  const originalError = console.error;
-
-  beforeAll(() => {
-    console.log = mock(() => {});
-    console.error = mock(() => {});
-  });
-
-  afterAll(() => {
-    console.log = originalLog;
-    console.error = originalError;
-  });
-
   test("should successfully execute a subagent", async () => {
     // We will track the depth/context based on the system prompt or messages content
     const mockApi = mock(async (messages: any[], _tools: any[]) => {
@@ -23,7 +10,7 @@ describe("Subagent Integration", () => {
 
       // Check if we are inside the 'tech-researcher' subagent
       const isSubagent = messages.some(
-        (m) => m.role === "system" && m.content.includes("tech researcher"),
+        (m) => m.role === "system" && m.content.includes("web researcher"),
       );
 
       if (!isSubagent) {

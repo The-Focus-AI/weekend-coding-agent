@@ -7,7 +7,9 @@ import {
 import { gitDiff } from "./git";
 import { searchFiles } from "./search";
 import { defaultBashExecutor, runBash } from "./system";
+import { tavilySearch } from "./tavily";
 import type { AgentRunner, CommandExecutor } from "./types";
+import { downloadUrl } from "./web";
 
 export { defaultBashExecutor } from "./system";
 export type { CommandExecutor } from "./types";
@@ -142,6 +144,34 @@ export const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "download_url",
+      description: "Download a URL and convert it to markdown",
+      parameters: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "URL to download" },
+        },
+        required: ["url"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "tavily_search",
+      description: "Perform web search using Tavily API",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search query" },
+        },
+        required: ["query"],
+      },
+    },
+  },
 ];
 
 export async function executeTool(
@@ -167,6 +197,10 @@ export async function executeTool(
       return runBash("mise run check", bashExecutor);
     case "git_diff":
       return gitDiff(bashExecutor);
+    case "download_url":
+      return downloadUrl(args.url);
+    case "tavily_search":
+      return tavilySearch(args.query);
     case "run_agent":
       if (!agentRunner) throw new Error("Agent runner not provided");
       return agentRunner(args.agentName, args.task);
