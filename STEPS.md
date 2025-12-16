@@ -208,5 +208,19 @@ Now we can give it a go:
 
 And finally lets update the tech report agent.
 
+---
 
+## Agents and Skills
+
+Skills are awesome.  They have front matter on when they run, and then they can include a whole bunch more information that only gets loaded up when the skill is activated.
+
+Lets build it.
+
+> We want to add "skills" to the system.  Create a skills directory, and inside of that have a bunch of directories with skills in them.  Each will have a SKILLS.md file, and there's front matter thant describes how to user it.  Have all the sysetm prompts include that front matter in them with instrutions that when you need to do a task, load in the rest of the SKILLS.md that examplains how it do it.  This system should also load in all the front matter of the agents, so that each agent will have access to all of them.  Have an example skill called big text that called figlet to make a banner.
+
+Lets also make sure that we aren't doing anything silly with agents.
+
+> i want to make sure that no tools, agents, or skills are hard coded inside of the agent prompt and are driven by meta data
+
+> update the big_text SKILLS to use examples of each of the different fonts and make sure that you are extremely complete
 
