@@ -224,3 +224,23 @@ Lets also make sure that we aren't doing anything silly with agents.
 
 > update the big_text SKILLS to use examples of each of the different fonts and make sure that you are extremely complete
 
+---
+
+## Images and Video
+
+Go grab yourself an google gemini key and we're going to teach this agent to make files and videos.
+
+> Add 2 skills, one to generate images and the other to generate videos.  Use the "npx @the-focus-ai/nano-banana" command, and look through how it works before writing out the skill.  do some research first on the best ways to prompt these models, and incorperate your findings in the skill
+
+Lets test:
+
+> make an image of diagraming the STEPS.md file
+
+Here we go:
+
+![diagram](images/steps_diagram.png)
+
+>  make a 720p 8 second video animating that image
+
+Skills are super useful as you can see -- we are teaching it how to use a CLI in this case, and it comes with very very additional tokens in the context window.
+
